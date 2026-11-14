@@ -1,0 +1,40 @@
+name: Deploy Okumajs demo and documentation
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'demo/**'
+      - 'README.md'
+      - 'scripts/build-docs.mjs'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Generate documentation and check browser scripts
+        run: |
+          node scripts/build-docs.mjs
+          node --check demo/app.js
+          node --check demo/docs.js
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload demo only
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: demo
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

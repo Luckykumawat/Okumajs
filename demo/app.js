@@ -1,5 +1,7 @@
 'use strict';
 const $=id=>document.getElementById(id);
+const CDN_URL='https://cdn.jsdelivr.net/npm/okumajs@0.3.0/dist/flowfx.min.js';
+const EXAMPLE_ASSETS='https://cdn.jsdelivr.net/gh/Luckykumawat/Okumajs@v0.3.0/demo/assets/';
 const effects=[
   ['Liquid silk','Soft currents. A surface that follows you.','dunes'],
   ['Vortex distortion','A magnetic swirl around your pointer.','tide'],
@@ -16,7 +18,12 @@ const initial={intensity:.85,speed:.9,frequency:5,zoom:.5,chromatic:.7,damping:7
 const base={...initial};
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3000);}
 function settings(){const config={...base};for(const key of ['intensity','speed','frequency','chromatic'])config[key]=Number($(key).value);config.zoom=$('zoom').checked?(base.zoom||.5):0;return {...mainDesign,style:Number($('effect').value),gooey:$('gooey').checked,hoverEdge:$('hover-edge').value,config};}
-function localCode(){return `<!-- Serve your files over HTTP -->\n<script src="./lib/flowfx.min.js"><\/script>\n\n<div class="art" tabindex="0"\n     aria-label="Hover to reshape. Click for next image."\n     style="width:100%;height:500px">\n  <img src="./image-1.jpg" alt="First artwork"\n       style="width:100%;height:100%;object-fit:cover">\n  <img src="./image-2.jpg" alt="Second artwork" style="display:none">\n  <img src="./image-3.jpg" alt="Third artwork" style="display:none">\n</div>\n\n<script>\n  const fx = FlowFX.imageEffect(".art", ${JSON.stringify(settings(),null,2).replace(/\n/g,'\n  ')});\n  fx.ready.catch(console.error);\n<\/script>`;}
+function imageCode(options,key='gallery',single=false){
+ const className='okuma-'+key;
+ const sources=(single?['dunes']:['dunes','violet','tide']).map((name,i)=>`  <img src="${EXAMPLE_ASSETS+name}.svg" alt="${name} landscape"\n       style="${i?'display:none':'display:block;width:100%;height:100%;object-fit:cover'}">`).join('\n');
+ return `<!-- Include the CDN script once per page. Replace image URLs with yours. -->\n<script src="${CDN_URL}"><\/script>\n\n<div class="${className}" tabindex="0"\n     aria-label="Interactive image gallery"\n     style="width:min(100%,800px);height:480px;${options.scroll?'margin:70vh auto;':''}">\n${sources}\n</div>\n\n<script>\n(() => {\n  const fx = FlowFX.imageEffect(".${className}", ${JSON.stringify(options,null,2).replace(/\n/g,'\n  ')});\n  fx.ready.catch(console.error);\n  // Call fx.destroy() when removing this gallery.\n})();\n<\/script>`;
+}
+function localCode(){return imageCode(settings(),'playground');}
 function sync(){const options=settings();main?.setOptions(options);$('effect-title').textContent=effects[options.style-1][0];$('style-number').textContent=String(options.style).padStart(2,'0');for(const key of ['intensity','speed','frequency','chromatic'])$(key+'-value').value=Number($(key).value).toFixed(2);$('install-code').textContent=localCode();$('design-summary').textContent=`HOVER / ${mainDesign.hoverMotion.toUpperCase()} · CLICK / ${mainDesign.transition.toUpperCase()}`;}
 function applyImagePreset(preset){Object.assign(base,initial,preset.config);Object.assign(mainDesign,{hoverMotion:preset.hoverMotion??'none',transition:preset.transition??'liquid'});$('effect').value=String(preset.style);$('hover-edge').value=preset.hoverEdge??'none';$('gooey').checked=!!preset.gooey;$('zoom').checked=(base.zoom??0)>0;for(const key of ['intensity','speed','frequency','chromatic'])$(key).value=String(base[key]);sync();}
 async function copy(value){try{await navigator.clipboard.writeText(value);toast('Copied. Make something move.');}catch{const area=document.createElement('textarea');area.value=value;document.body.append(area);area.select();const ok=document.execCommand('copy');area.remove();toast(ok?'Copied to clipboard.':'Clipboard unavailable. Use the example below.');}}
@@ -33,7 +40,7 @@ async function init(){
     card.innerHTML=`<div class="effect-image" id="effect-${i+1}" tabindex="0" role="button" aria-label="${name}. Hover to reshape edges. Click or press Enter for next image."><img src="assets/${asset}.svg" alt="Original ${asset} artwork" width="1200" height="900"><img src="assets/${asset==='ember'?'tide':'ember'}.svg" width="1200" height="900" alt="Alternate landscape"><img src="assets/${asset==='violet'?'dunes':'violet'}.svg" width="1200" height="900" alt="Third landscape"><div class="effect-card-top"><span>F / ${String(i+1).padStart(3,'0')}</span><span id="card-index-${i+1}">01 / 03</span></div></div><div class="card-info"><div><h3>${name}</h3><p>${description}</p></div><div class="card-actions"><button aria-label="Open ${name} in playground">↗</button><button data-copy aria-label="Copy ${name} preset">Copy</button></div></div>`;
     grid.append(card);
     card.querySelector('button').addEventListener('click',()=>{applyImagePreset(FlowFX.imagePresets[presetKeys[i]]);$('playground').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});toast(`${name} loaded in playground`);});
-    card.querySelector('[data-copy]').addEventListener('click',()=>copy(`const fx = FlowFX.imageEffect(".your-gallery", ${JSON.stringify(FlowFX.imagePresets[presetKeys[i]],null,2)});\nfx.ready.catch(console.error);`));
+    card.querySelector('[data-copy]').addEventListener('click',()=>copy(imageCode(FlowFX.imagePresets[presetKeys[i]],presetKeys[i])));
     const design=FlowFX.imagePresets[presetKeys[i]];card.querySelector('.card-info p').textContent+=` Hover: ${design.hoverMotion} · Click: ${design.transition}`;
     try{const fx=FlowFX.imageEffect(`#effect-${i+1}`,{...design,onProgress:p=>{$('card-index-'+(i+1)).textContent=String(Math.round(p*2)+1).padStart(2,'0')+' / 03';}});fx.ready.catch(error=>console.warn(name,error));}catch(error){console.warn(error);}
   });
@@ -51,6 +58,7 @@ for(const id of ['hover-edge','intensity','speed','frequency','chromatic','gooey
 $('next').addEventListener('click',()=>main?.next());$('previous').addEventListener('click',()=>main?.previous());
 $('pause').addEventListener('click',()=>{paused=!paused;main?.[paused?'pause':'play']();$('pause').textContent=paused?'▶ Play':'Ⅱ Pause';});
 $('reset').addEventListener('click',()=>{Object.assign(base,initial);Object.assign(mainDesign,{hoverMotion:'tilt',transition:'liquid'});$('effect').value='1';$('hover-edge').value='wave';for(const key of ['intensity','speed','frequency','chromatic'])$(key).value=String(base[key]);$('gooey').checked=true;$('zoom').checked=true;main?.setProgress(0);if(paused)$('pause').click();sync();toast('Back to the first current.');});
+$('copy-scroll-gallery').addEventListener('click',()=>copy(imageCode({style:'wobble',gooey:true,scroll:true,click:false,config:{intensity:.65,zoom:0}},'scroll-gallery')));
 $('copy-code').addEventListener('click',()=>copy(localCode()));$('copy-install').addEventListener('click',()=>copy(localCode()));
 $('export').addEventListener('click',()=>download(JSON.stringify(main?.exportPreset()??{version:1,...settings()},null,2),'flowfx-preset.json'));
 $('import').addEventListener('click',()=>$('preset-file').click());
@@ -80,7 +88,7 @@ function initNewStudies(){
     card.innerHTML=`<div class="edge-surface" id="edge-${mode}" tabindex="0" role="button" aria-label="${name}. Hover to morph edges, click for next image."><img src="assets/${asset}.svg" width="1200" height="900" alt="${asset} landscape"><img src="assets/ember.svg" width="1200" height="900" alt="Ember landscape"><img src="assets/${asset==='tide'?'violet':'tide'}.svg" width="1200" height="900" alt="Another landscape"></div><div class="edge-card-caption"><h3>${name}</h3><span id="edge-index-${mode}">01 / 03</span></div><p>${description}</p><span class="study-hint">HOVER TO RESHAPE · CLICK TO CHANGE</span><button class="quiet edge-copy">Copy this card ↗</button>`;
     $('edge-grid').append(card);
     const design=FlowFX.imagePresets[{'wave':'tidal-edges','blob':'living-silhouette','scallop':'scalloped-frame'}[mode]];
-    card.querySelector('button.edge-copy').addEventListener('click',()=>copy(`const fx = FlowFX.imageEffect(".your-gallery", ${JSON.stringify(design,null,2)});\nfx.ready.catch(console.error);`));
+    card.querySelector('button.edge-copy').addEventListener('click',()=>copy(imageCode(design,'edge-'+mode)));
     try{const fx=FlowFX.imageEffect('#edge-'+mode,{...design,onProgress:p=>{$('edge-index-'+mode).textContent=String(Math.round(p*2)+1).padStart(2,'0')+' / 03';}});fx.ready.catch(console.warn);}catch(error){console.warn(error);}
   }
   const definitions=[
@@ -94,7 +102,7 @@ function initNewStudies(){
     section.innerHTML=`<div class="study-sticky"><div class="study-copy"><span class="eyebrow">SCROLL STUDY / ${mode.toUpperCase()}</span><h3>${name}</h3><p>${description}</p><span class="study-hint">↓ SCROLL TO PLAY · ↑ SCROLL TO REVERSE</span><div class="study-meter"><span id="study-bar-${mode}"></span></div><output id="study-percent-${mode}" aria-label="${name} progress">0%</output><button class="quiet study-code" data-mode="${mode}">Copy this effect ↗</button></div><div class="study-surface" id="study-surface-${mode}" tabindex="0" aria-label="${name}, a scroll-controlled image"><img src="assets/${asset}.svg" width="1200" height="900" alt="${asset} landscape with ${name} effect"></div></div>`;
     $('scroll-studies').append(section);
     const options={style,scrollEffect:mode,hoverEdge:{depth:'diamond',ribbon:'curtain',shutter:'cut',lens:'orbit'}[mode],hoverMotion:{depth:'tilt',ribbon:'fold',shutter:'glitch',lens:'swirl'}[mode],click:false,config:{intensity:.55,zoom:0,damping:9}};
-    section.querySelector('button').addEventListener('click',()=>copy(`const fx = FlowFX.imageEffect(".art", ${JSON.stringify({...options,scroll:true},null,2)});\nfx.ready.catch(console.error);`));
+    section.querySelector('button').addEventListener('click',()=>copy(imageCode({...options,scroll:true},'scroll-'+mode,true)));
     try{
       const fx=FlowFX.imageEffect('#study-surface-'+mode,{...options,onProgress:p=>{$('study-percent-'+mode).value=Math.round(p*100)+'%';$('study-bar-'+mode).style.width=p*100+'%';}});
       const timeline=()=>{const r=section.getBoundingClientRect();const span=Math.max(1,r.height-window.innerHeight*.25);fx.setProgress(Math.max(0,Math.min(1,(window.innerHeight*.55-r.top)/span)));};
@@ -109,7 +117,7 @@ let pageFollower, selectedFollower='aura';
 const followerPreviews=[];
 const followerDescriptions={aura:'A soft radial glow and elastic mint ring.',orbit:'Three rotating orbits with satellite particles.',comet:'A tapered coral trail with a glowing solar head.',ribbon:'Two electric strands weaving through your path.',magnetic:'A velocity-stretched ring with four magnetic poles.',fireflies:'Eight luminous motes with individual flight paths.',pixel:'Grid-snapped candy blocks with a stepped trail.',ink:'Overlapping navy droplets that pool into a brush.',compass:'A directional diamond, north marker and compass ring.',text:'Rotating rose lettering orbiting your pointer.'};
 function followerOptions(style=selectedFollower){const palette=FlowFX.followerStyles[style];return {style,color:style===selectedFollower?$('follower-color').value:palette.color,accent:palette.accent,size:style===selectedFollower?Number($('follower-size').value):32};}
-function followerCode(options=followerOptions()){return `// Include flowfx.min.js before this snippet.\nconst cursor = FlowFX.mouseFollower(${JSON.stringify(options,null,2)});\n\n// When removing the effect:\n// cursor.destroy();`;}
+function followerCode(options=followerOptions()){return `<!-- Include the CDN script once per page. -->\n<script src="${CDN_URL}"><\/script>\n<script>\n  window.okumaCursor?.destroy();\n  window.okumaCursor = FlowFX.mouseFollower(${JSON.stringify(options,null,2)});\n  // Remove later: window.okumaCursor.destroy();\n<\/script>`;}
 function syncFollower(){const options=followerOptions();if(pageFollower)pageFollower.setOptions(options);$('follower-code').textContent=followerCode(options);}
 function stopFollower(){pageFollower?.destroy();pageFollower=undefined;for(const preview of followerPreviews)preview.setEnabled(true);$('follower-status').textContent='CARD PREVIEWS · NATIVE POINTER ON';for(const el of document.querySelectorAll('.follower-use')){el.setAttribute('aria-pressed','false');el.textContent='Use on page ↗';}for(const id of ['follower-color','follower-size','stop-follower'])$(id).disabled=true;}
 function initFollowers(){

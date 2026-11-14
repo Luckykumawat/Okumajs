@@ -1,207 +1,69 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FlowFX — Integration & publishing</title><style>body{margin:0;background:#f3f2eb;color:#20372c;font:14px/1.7 system-ui}main{max-width:920px;margin:0 auto;padding:40px 24px}a{color:#456f45}pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.8 ui-monospace,monospace;background:#e8ece1;padding:25px;border:1px solid #d3dacb;border-radius:8px}h1{font-weight:400;font-size:42px;letter-spacing:-2px}</style></head><body><main><a href="/">← Back to the shader lab</a><h1>Build with FlowFX.</h1><p>Full API reference and npm / CDN publishing steps.</p><pre># FlowFX
-
-**Published:** [`okumajs@0.3.0`](https://www.npmjs.com/package/okumajs). [Verified npm CDN](https://cdn.jsdelivr.net/npm/okumajs@0.3.0/dist/flowfx.min.js). Browser API remains `FlowFX`.
-
-A working, framework-independent Three.js image-effects MVP. Original GLSL shaders, image hover response, click ripples, multi-image transitions and scroll control. This is inspired by the supplied interaction brief; it does not wrap or copy Shery.js.
-
-## Run the lab
-
-Requires Node.js 20+ and npm. From this folder:
-
-```sh
-npm ci
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Okumajs documentation: copy-ready image animations, scroll effects, cursor followers and the FlowFX API."><title>Okumajs — Documentation</title><link rel="stylesheet" href="docs.css"></head><body><header><a class="brand" href="./">okuma<em>js</em><i></i></a><nav aria-label="Main"><a href="./#hover">Hover & Click</a><a href="./#mouse-followers">Followers</a><a href="./#scroll-animations">Scroll</a><a href="https://github.com/Luckykumawat/Okumajs">GitHub ↗</a></nav><span>DOCUMENTATION / v0.3.0</span></header><div class="docs-intro"><div class="eyebrow">COPY THE CODE. MAKE IT YOURS.</div><h1>A little motion.<br><em>A clear starting point.</em></h1><p>Explore animations in the <a href="./">live playground</a>, copy an example, and add the CDN once.<br>The npm package is <code>okumajs</code>. The browser API is <code>FlowFX</code>.</p></div><div class="docs-layout"><aside><details open><summary>On this page</summary><nav aria-label="Table of contents"><a href="#run-the-lab">Run the lab</a><a href="#demo-categories">Demo categories</a><a href="#script-tag-integration">Script-tag integration</a><a href="#new-in-0-3-individual-card-designs-and-ten-mouse-followers">New in 0.3: individual card designs and ten mouse followers</a><a href="#new-in-0-2-scroll-studies-living-edges-and-click-galleries">New in 0.2: scroll studies, living edges and click galleries</a><a href="#effects">Effects</a><a href="#multiple-images-gooey-and-scroll">Multiple images, gooey and scroll</a><a href="#configuration-and-presets">Configuration and presets</a><a href="#runtime-api">Runtime API</a><a href="#npm-framework-integration">npm / framework integration</a><a href="#publishing-and-cdn">Publishing and CDN</a><a href="#performance-accessibility-and-mvp-boundaries">Performance, accessibility and MVP boundaries</a><a href="#verification">Verification</a><a href="#github-pages-deployment">GitHub Pages deployment</a></nav></details></aside><main id="content"><section class="quick-start" id="quick-start"><div class="eyebrow">START HERE</div><h2>One script. Your first effect.</h2><p>Paste this into an HTML page served over HTTPS or localhost. Move your mouse to try the cursor. Replace <code>orbit</code> with any follower style below.</p><div class="doc-code"><div class="doc-code-bar"><span>html</span><button data-copy-code aria-label="Copy quick start CDN example">Copy code</button></div><pre><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/okumajs@0.3.0/dist/flowfx.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.okumaCursor = FlowFX.mouseFollower({ style: &quot;orbit&quot; });
+&lt;/script&gt;</code></pre></div><p><strong>Combining effects?</strong> Include the CDN script once, then add each animation’s markup and initialization. Replace the example images with your own same-origin or CORS-enabled images. Use one page-wide follower at a time; destroy it before switching.</p><a class="play-link" href="./#mouse-followers">Try all 10 followers ↗</a></section><h1 id="flowfx">FlowFX</h1><p><strong>Live demo:</strong> https://luckykumawat.github.io/Okumajs/ · <strong>Documentation:</strong> https://luckykumawat.github.io/Okumajs/guide.html</p><p><strong>Published:</strong> <a href="https://www.npmjs.com/package/okumajs"><code>okumajs@0.3.0</code></a>. <a href="https://cdn.jsdelivr.net/npm/okumajs@0.3.0/dist/flowfx.min.js">Verified npm CDN</a>. Browser API remains <code>FlowFX</code>.</p><p>A working, framework-independent Three.js image-effects MVP. Original GLSL shaders, image hover response, click ripples, multi-image transitions and scroll control. This is inspired by the supplied interaction brief; it does not wrap or copy Shery.js.</p><h2 id="run-the-lab">Run the lab</h2><p>Requires Node.js 20+ and npm. From this folder:</p><div class="doc-code"><div class="doc-code-bar"><span>sh</span><button data-copy-code aria-label="Copy code example 1">Copy code</button></div><pre><code>npm ci
 npm run build
-npm run dev
-```
-
-Open http://127.0.0.1:4173. Keep the terminal running; Ctrl+C stops it. The included demo and browser bundle are prebuilt, so `npm run dev` alone works without installing dependencies. `file://` is not supported; use HTTP for image/preset loading.
-
-The demo uses original local SVG artworks. There are no runtime image, font or third-party script requests. Replace them with your own photographs to use the same effects with photography.
-
-## Demo categories
-
-The lab now uses separate tabs: **Hover &amp; Click** (10 image card designs and playground), **Mouse Followers** (10 cursor styles), **Scroll Animations** (4 studies + multi-image scroll), and **Get Started** (integration and publishing).
-
-Only the selected panel is visible. Switch with the tab buttons or Left/Right/Home/End keys. Category selection is reflected in the URL and supports browser Back/Forward. Direct links: `/#hover`, `/#mouse-followers`, `/#scroll-animations`, `/#get-started`. Older section links such as `/#followers`, `/#edge-lab` and `/#study-ribbon` automatically select the correct category.
-
-Hidden image and scoped cursor previews stop rendering until their panel becomes visible again. A page-wide cursor explicitly enabled with Use on page remains active across categories until stopped.
-
-## Script-tag integration
-
-Copy `dist/flowfx.min.js` into your website. Three.js is bundled; no separate Three/GSAP dependency scripts and no required CSS file.
-
-```html
-&lt;script src=&quot;./lib/flowfx.min.js&quot;&gt;&lt;/script&gt;
+npm run dev</code></pre></div><p>Open http://127.0.0.1:4173. Keep the terminal running; Ctrl+C stops it. The included demo and browser bundle are prebuilt, so <code>npm run dev</code> alone works without installing dependencies. <code>file://</code> is not supported; use HTTP for image/preset loading.</p><p>The demo uses original local SVG artworks. There are no runtime image, font or third-party script requests. Replace them with your own photographs to use the same effects with photography.</p><h2 id="demo-categories">Demo categories</h2><p>The lab now uses separate tabs: <strong>Hover &amp; Click</strong> (10 image card designs and playground), <strong>Mouse Followers</strong> (10 cursor styles), <strong>Scroll Animations</strong> (4 studies + multi-image scroll), and <strong>Get Started</strong> (integration and publishing).</p><p>Only the selected panel is visible. Switch with the tab buttons or Left/Right/Home/End keys. Category selection is reflected in the URL and supports browser Back/Forward. Direct links: <code>/#hover</code>, <code>/#mouse-followers</code>, <code>/#scroll-animations</code>, <code>/#get-started</code>. Older section links such as <code>/#followers</code>, <code>/#edge-lab</code> and <code>/#study-ribbon</code> automatically select the correct category.</p><p>Hidden image and scoped cursor previews stop rendering until their panel becomes visible again. A page-wide cursor explicitly enabled with Use on page remains active across categories until stopped.</p><h2 id="script-tag-integration">Script-tag integration</h2><p>Copy <code>dist/flowfx.min.js</code> into your website. Three.js is bundled; no separate Three/GSAP dependency scripts and no required CSS file.</p><div class="doc-code"><div class="doc-code-bar"><span>html</span><button data-copy-code aria-label="Copy code example 2">Copy code</button></div><pre><code>&lt;script src=&quot;./lib/flowfx.min.js&quot;&gt;&lt;/script&gt;
 &lt;img class=&quot;art&quot; src=&quot;./your-image.jpg&quot; width=&quot;1200&quot; height=&quot;900&quot;
      alt=&quot;Describe your image&quot; style=&quot;width:100%;height:500px;object-fit:cover&quot;&gt;
 &lt;script&gt;
-  const fx = FlowFX.imageEffect(&#x27;.art&#x27;, {
-    style: &#x27;liquid&#x27;,
+  const fx = FlowFX.imageEffect('.art', {
+    style: 'liquid',
     debug: true,
     config: { intensity: 0.85, speed: 0.9, zoom: 0.5 }
   });
-  fx.ready.catch(error =&gt; console.error(&#x27;FlowFX could not start&#x27;, error));
-&lt;/script&gt;
-```
-
-Call after the elements exist. `ready` resolves after textures load and setup completes; catch failures. Source images remain in the DOM with their alternative text and are hidden visually only after setup. `destroy()` restores original inline opacity/display values.
-
-## New in 0.3: individual card designs and ten mouse followers
-
-Each of the seven collection cards has its own shader, hover motion, edge shape, transition and tuning. The three edge-study cards also have independent presets, and the four scroll studies retain distinct scroll treatments with their own hover behaviors. Copy a card&#x27;s exact setup from its Copy button or use a named preset:
-
-```js
-const image = FlowFX.imageEffect(&#x27;.your-gallery&#x27;, {
-  ...FlowFX.imagePresets[&#x27;cyber-mosaic&#x27;]
+  fx.ready.catch(error =&gt; console.error('FlowFX could not start', error));
+&lt;/script&gt;</code></pre></div><p>Call after the elements exist. <code>ready</code> resolves after textures load and setup completes; catch failures. Source images remain in the DOM with their alternative text and are hidden visually only after setup. <code>destroy()</code> restores original inline opacity/display values.</p><h2 id="new-in-0-3-individual-card-designs-and-ten-mouse-followers">New in 0.3: individual card designs and ten mouse followers</h2><p>Each of the seven collection cards has its own shader, hover motion, edge shape, transition and tuning. The three edge-study cards also have independent presets, and the four scroll studies retain distinct scroll treatments with their own hover behaviors. Copy a card's exact setup from its Copy button or use a named preset:</p><div class="doc-code"><div class="doc-code-bar"><span>js</span><button data-copy-code aria-label="Copy code example 3">Copy code</button></div><pre><code>const image = FlowFX.imageEffect('.your-gallery', {
+  ...FlowFX.imagePresets['cyber-mosaic']
 });
-image.ready.catch(console.error);
-```
-
-| Preset | Hover motion | Edge | Image transition |
-| --- | --- | --- | --- |
-| `liquid-silk` | Tilt | Wave | Liquid |
-| `vortex-distortion` | Swirl | Orbit | Radial |
-| `elastic-terrain` | Fold | Diamond | Ribbon |
-| `wind-sculpture` | Lift | Curtain | Slide |
-| `radial-ripple` | Ripple | Blob | Zoom |
-| `perlin-drift` | Stretch | Scallop | Diagonal |
-| `cyber-mosaic` | Glitch | Cut | Pixel |
-| `tidal-edges` | Stretch | Wave | Radial |
-| `living-silhouette` | Swirl | Blob | Liquid |
-| `scalloped-frame` | Tilt | Scallop | Diagonal |
-
-`hoverMotion` and `transition` are top-level imageEffect options. `hoverMotion: &#x27;none&#x27;` disables extra hover geometry; a missing `transition` retains the original liquid/crossfade behavior. Explicit non-liquid transitions take priority over the gooey blend mask. Exported presets include both names. Older JSON presets still load.
-
-### Mouse followers
-
-Use the same browser bundle, with no extra CSS:
-
-```html
-&lt;script src=&quot;./lib/flowfx.min.js&quot;&gt;&lt;/script&gt;
+image.ready.catch(console.error);</code></pre></div><div class="doc-table"><table><tr><th>Preset</th><th>Hover motion</th><th>Edge</th><th>Image transition</th></tr><tr><td><code>liquid-silk</code></td><td>Tilt</td><td>Wave</td><td>Liquid</td></tr><tr><td><code>vortex-distortion</code></td><td>Swirl</td><td>Orbit</td><td>Radial</td></tr><tr><td><code>elastic-terrain</code></td><td>Fold</td><td>Diamond</td><td>Ribbon</td></tr><tr><td><code>wind-sculpture</code></td><td>Lift</td><td>Curtain</td><td>Slide</td></tr><tr><td><code>radial-ripple</code></td><td>Ripple</td><td>Blob</td><td>Zoom</td></tr><tr><td><code>perlin-drift</code></td><td>Stretch</td><td>Scallop</td><td>Diagonal</td></tr><tr><td><code>cyber-mosaic</code></td><td>Glitch</td><td>Cut</td><td>Pixel</td></tr><tr><td><code>tidal-edges</code></td><td>Stretch</td><td>Wave</td><td>Radial</td></tr><tr><td><code>living-silhouette</code></td><td>Swirl</td><td>Blob</td><td>Liquid</td></tr><tr><td><code>scalloped-frame</code></td><td>Tilt</td><td>Scallop</td><td>Diagonal</td></tr></table></div><p><code>hoverMotion</code> and <code>transition</code> are top-level imageEffect options. <code>hoverMotion: 'none'</code> disables extra hover geometry; a missing <code>transition</code> retains the original liquid/crossfade behavior. Explicit non-liquid transitions take priority over the gooey blend mask. Exported presets include both names. Older JSON presets still load.</p><h3 id="mouse-followers">Mouse followers</h3><p>Use the same browser bundle, with no extra CSS:</p><div class="doc-code"><div class="doc-code-bar"><span>html</span><button data-copy-code aria-label="Copy code example 4">Copy code</button></div><pre><code>&lt;script src=&quot;./lib/flowfx.min.js&quot;&gt;&lt;/script&gt;
 &lt;script&gt;
   const cursor = FlowFX.mouseFollower({
-    style: &#x27;orbit&#x27;,
-    color: &#x27;#b29aff&#x27;,
-    accent: &#x27;#f5ceff&#x27;,
+    style: 'orbit',
+    color: '#b29aff',
+    accent: '#f5ceff',
     size: 32,
     speed: 12
   });
   // cursor.destroy(); // Remove when unmounting.
-&lt;/script&gt;
-```
-
-| Style | Default palette | Distinct behavior |
-| --- | --- | --- |
-| `aura` | Mint / pale lime | Elastic ring with radial glow |
-| `orbit` | Violet / lavender | Three orbital paths and satellites |
-| `comet` | Coral / warm gold | Tapered trail with glowing head |
-| `ribbon` | Cyan / lilac | Two weaving, continuous strands |
-| `magnetic` | Amber / cream | Velocity-stretched ring and poles |
-| `fireflies` | Lime / yellow | Eight independently orbiting luminous motes |
-| `pixel` | Pink / ice blue | Grid-snapped square trail |
-| `ink` | Navy / steel | Overlapping droplets and brush-like pooling |
-| `compass` | Cobalt / periwinkle | Directional diamond and north marker |
-| `text` | Rose / blush | Rotating circular text halo |
-
-```js
-const cursor = FlowFX.mouseFollower({
-  target: &#x27;.interactive-region&#x27;, // Optional; omit for page-wide.
-  style: &#x27;text&#x27;,
-  text: &#x27;EXPLORE WITH ME · &#x27;,
-  color: &#x27;#ff9caf&#x27;, accent: &#x27;#ffe0e7&#x27;,
+&lt;/script&gt;</code></pre></div><div class="doc-table"><table><tr><th>Style</th><th>Default palette</th><th>Distinct behavior</th></tr><tr><td><code>aura</code></td><td>Mint / pale lime</td><td>Elastic ring with radial glow</td></tr><tr><td><code>orbit</code></td><td>Violet / lavender</td><td>Three orbital paths and satellites</td></tr><tr><td><code>comet</code></td><td>Coral / warm gold</td><td>Tapered trail with glowing head</td></tr><tr><td><code>ribbon</code></td><td>Cyan / lilac</td><td>Two weaving, continuous strands</td></tr><tr><td><code>magnetic</code></td><td>Amber / cream</td><td>Velocity-stretched ring and poles</td></tr><tr><td><code>fireflies</code></td><td>Lime / yellow</td><td>Eight independently orbiting luminous motes</td></tr><tr><td><code>pixel</code></td><td>Pink / ice blue</td><td>Grid-snapped square trail</td></tr><tr><td><code>ink</code></td><td>Navy / steel</td><td>Overlapping droplets and brush-like pooling</td></tr><tr><td><code>compass</code></td><td>Cobalt / periwinkle</td><td>Directional diamond and north marker</td></tr><tr><td><code>text</code></td><td>Rose / blush</td><td>Rotating circular text halo</td></tr></table></div><div class="doc-code"><div class="doc-code-bar"><span>js</span><button data-copy-code aria-label="Copy code example 5">Copy code</button></div><pre><code>const cursor = FlowFX.mouseFollower({
+  target: '.interactive-region', // Optional; omit for page-wide.
+  style: 'text',
+  text: 'EXPLORE WITH ME · ',
+  color: '#ff9caf', accent: '#ffe0e7',
   size: 40, speed: 12, trail: 22
 });
-cursor.setOptions({ style: &#x27;comet&#x27;, color: &#x27;#ff8363&#x27; });
+cursor.setOptions({ style: 'comet', color: '#ff8363' });
 cursor.setEnabled(false);
 cursor.setEnabled(true);
 const preset = cursor.exportPreset(); // Serializable options, without target.
 cursor.destroy();
-FlowFX.destroyFollowers(); // All cursor followers only.
-```
-
-- `target`: one Element or a selector matching an element. Default: document root (page-wide). One follower per target; destroy it before creating another on the same target.
-- `size`: 12–100, default 32. `speed`: smoothing response rate 1–30, default 12. `trail`: 6–40 points, default 22.
-- `color` / `accent`: 3- or 6-digit hex colors. Changing style picks that style&#x27;s palette unless explicitly overridden. `text`: max 40 characters, used by the text style.
-- `idleAnimation: true`: autonomous preview movement for **scoped targets only**; this powers the ten demo cards. Omit for a normal follower.
-- `hideCursor: true`: opt-in to hiding the target&#x27;s native cursor on fine-pointer devices; default false. Original cursor styling is restored on disable/destroy. Descendant cursor overrides can still show native cursors.
-- Mouse and pen pointer input supported; touch input does not activate a follower. Under OS reduced motion, follower drawing is disabled and native cursor styling restored. Native cursor remains enabled by default.
-- Followers share a separate Canvas 2D overlay, require no WebGL context, clip scoped previews to their rectangular target, and render only visible/active previews. The canvas does not intercept clicks. `FlowFX.destroyAll()` now destroys both image effects and followers.
-- The demo&#x27;s **Use on page** button disables the scoped previews while the chosen page-wide follower is active. **Stop follower** restores preview mode. Color/size controls and Copy code use the selected style.
-
-## New in 0.2: scroll studies, living edges and click galleries
-
-Four independent scroll treatments can be combined with the existing seven image shaders:
-
-| `scrollEffect` | Behavior |
-| --- | --- |
-| `depth` | Vertex perspective shear, parallax texture drift and a dolly push |
-| `ribbon` | Scroll-driven mesh twist and ribbon-like UV displacement |
-| `shutter` | Twelve staggered alpha shutters with sliding texture strips |
-| `lens` | Expanding circular aperture with a warped zoom lens |
-
-These work on **single images too**. To drive progress from the target&#x27;s normal viewport traversal:
-
-```js
-const fx = FlowFX.imageEffect(&#x27;.art&#x27;, {
-  style: &#x27;wobble&#x27;,
+FlowFX.destroyFollowers(); // All cursor followers only.</code></pre></div><ul><li><code>target</code>: one Element or a selector matching an element. Default: document root (page-wide). One follower per target; destroy it before creating another on the same target.</li><li><code>size</code>: 12–100, default 32. <code>speed</code>: smoothing response rate 1–30, default 12. <code>trail</code>: 6–40 points, default 22.</li><li><code>color</code> / <code>accent</code>: 3- or 6-digit hex colors. Changing style picks that style's palette unless explicitly overridden. <code>text</code>: max 40 characters, used by the text style.</li><li><code>idleAnimation: true</code>: autonomous preview movement for <strong>scoped targets only</strong>; this powers the ten demo cards. Omit for a normal follower.</li><li><code>hideCursor: true</code>: opt-in to hiding the target's native cursor on fine-pointer devices; default false. Original cursor styling is restored on disable/destroy. Descendant cursor overrides can still show native cursors.</li><li>Mouse and pen pointer input supported; touch input does not activate a follower. Under OS reduced motion, follower drawing is disabled and native cursor styling restored. Native cursor remains enabled by default.</li><li>Followers share a separate Canvas 2D overlay, require no WebGL context, clip scoped previews to their rectangular target, and render only visible/active previews. The canvas does not intercept clicks. <code>FlowFX.destroyAll()</code> now destroys both image effects and followers.</li><li>The demo's <strong>Use on page</strong> button disables the scoped previews while the chosen page-wide follower is active. <strong>Stop follower</strong> restores preview mode. Color/size controls and Copy code use the selected style.</li></ul><h2 id="new-in-0-2-scroll-studies-living-edges-and-click-galleries">New in 0.2: scroll studies, living edges and click galleries</h2><p>Four independent scroll treatments can be combined with the existing seven image shaders:</p><div class="doc-table"><table><tr><th><code>scrollEffect</code></th><th>Behavior</th></tr><tr><td><code>depth</code></td><td>Vertex perspective shear, parallax texture drift and a dolly push</td></tr><tr><td><code>ribbon</code></td><td>Scroll-driven mesh twist and ribbon-like UV displacement</td></tr><tr><td><code>shutter</code></td><td>Twelve staggered alpha shutters with sliding texture strips</td></tr><tr><td><code>lens</code></td><td>Expanding circular aperture with a warped zoom lens</td></tr></table></div><p>These work on <strong>single images too</strong>. To drive progress from the target's normal viewport traversal:</p><div class="doc-code"><div class="doc-code-bar"><span>js</span><button data-copy-code aria-label="Copy code example 6">Copy code</button></div><pre><code>const fx = FlowFX.imageEffect('.art', {
+  style: 'wobble',
   scroll: true,
-  scrollEffect: &#x27;ribbon&#x27;,
-  hoverEdge: &#x27;wave&#x27;,
+  scrollEffect: 'ribbon',
+  hoverEdge: 'wave',
   config: { edgeStrength: 1.2, damping: 9 }
 });
-fx.ready.catch(console.error);
-```
-
-For sticky surfaces, use `scroll: false` and feed `setProgress(0..1)` from your section timeline. The demo&#x27;s four new studies do this. `scrollEffect: &#x27;none&#x27;` or `false` disables scroll treatment.
-
-`hoverEdge` supports `wave`, `blob`, `scallop`, `diamond`, `curtain`, `cut`, `orbit`, `none` or `false`. The shader changes the actual alpha silhouette on pointer entry or keyboard focus and smoothly restores the rectangle on pointer exit. `config.edgeStrength` controls how deeply the outline changes (0–2, default 1). These are shader masks; CSS layout and the clickable target rectangle remain unchanged. Transparent edge cutouts show the target&#x27;s background. Reduced motion disables the edge animation and scroll treatment.
-
-```html
-&lt;div class=&quot;gallery&quot; tabindex=&quot;0&quot; aria-label=&quot;Hover to reshape; click for next image&quot;
+fx.ready.catch(console.error);</code></pre></div><p>For sticky surfaces, use <code>scroll: false</code> and feed <code>setProgress(0..1)</code> from your section timeline. The demo's four new studies do this. <code>scrollEffect: 'none'</code> or <code>false</code> disables scroll treatment.</p><p><code>hoverEdge</code> supports <code>wave</code>, <code>blob</code>, <code>scallop</code>, <code>diamond</code>, <code>curtain</code>, <code>cut</code>, <code>orbit</code>, <code>none</code> or <code>false</code>. The shader changes the actual alpha silhouette on pointer entry or keyboard focus and smoothly restores the rectangle on pointer exit. <code>config.edgeStrength</code> controls how deeply the outline changes (0–2, default 1). These are shader masks; CSS layout and the clickable target rectangle remain unchanged. Transparent edge cutouts show the target's background. Reduced motion disables the edge animation and scroll treatment.</p><div class="doc-code"><div class="doc-code-bar"><span>html</span><button data-copy-code aria-label="Copy code example 7">Copy code</button></div><pre><code>&lt;div class=&quot;gallery&quot; tabindex=&quot;0&quot; aria-label=&quot;Hover to reshape; click for next image&quot;
      style=&quot;width:100%;height:450px&quot;&gt;
   &lt;img src=&quot;one.jpg&quot; alt=&quot;First scene&quot; style=&quot;width:100%;height:100%;object-fit:cover&quot;&gt;
   &lt;img src=&quot;two.jpg&quot; alt=&quot;Second scene&quot; style=&quot;display:none&quot;&gt;
   &lt;img src=&quot;three.jpg&quot; alt=&quot;Third scene&quot; style=&quot;display:none&quot;&gt;
 &lt;/div&gt;
 &lt;script&gt;
-  const gallery = FlowFX.imageEffect(&#x27;.gallery&#x27;, {
-    style: &#x27;liquid&#x27;, hoverEdge: &#x27;blob&#x27;, gooey: true,
+  const gallery = FlowFX.imageEffect('.gallery', {
+    style: 'liquid', hoverEdge: 'blob', gooey: true,
     config: { edgeStrength: 1.2 }
   });
   gallery.ready.catch(console.error);
-&lt;/script&gt;
-```
-
-Click, Enter/Space or arrow keys advance multi-image galleries. All seven collection cards and the three new edge-study cards now include three images and visible image counters. A single `&lt;img&gt;` needs a multi-image container to switch between distinct pictures. `click: false` disables both click and keyboard image navigation; it does not disable the click ripple.
-
-Edge and scroll modes are saved in exported presets. Older v1 presets still load, with no edge/scroll treatment unless supplied as explicit options. `setOptions` validates the mode names before applying them.
-
-## Effects
-
-| ID | Name | Implementation |
-| --- | --- | --- |
-| 1 | `liquid` | Soft sinusoidal UV flow + pointer ripples |
-| 2 | `distortion` | Pointer-localized vortex field |
-| 3 | `wobble` | Subdivided plane with animated vertex depth |
-| 4 | `wind` | Anchored flag-like vertex displacement |
-| 5 | `ripple` | Concentric radial UV distortion |
-| 6 | `perlin` | Interpolated 3D gradient-noise displacement |
-| 7 | `cyber` | Quantized cell displacement + grid highlights |
-
-Style 7 is cyber; style 6 is Perlin. This resolves the duplicate style 6 in the supplied examples. Styles 3/4 change actual mesh vertices; other styles primarily distort texture coordinates. These are 3D image surfaces, not volumetric 3D models.
-
-Every effect reacts to pointer movement; click adds a decaying ripple. A multi-image container also advances on click, Enter/Space or arrows when focusable. Use semantic controls or add a meaningful `tabindex` and accessible description to interactive wrappers.
-
-## Multiple images, gooey and scroll
-
-```html
-&lt;div class=&quot;gallery&quot; tabindex=&quot;0&quot; aria-label=&quot;Interactive landscape gallery&quot;&gt;
+&lt;/script&gt;</code></pre></div><p>Click, Enter/Space or arrow keys advance multi-image galleries. All seven collection cards and the three new edge-study cards now include three images and visible image counters. A single <code>&lt;img&gt;</code> needs a multi-image container to switch between distinct pictures. <code>click: false</code> disables both click and keyboard image navigation; it does not disable the click ripple.</p><p>Edge and scroll modes are saved in exported presets. Older v1 presets still load, with no edge/scroll treatment unless supplied as explicit options. <code>setOptions</code> validates the mode names before applying them.</p><h2 id="effects">Effects</h2><div class="doc-table"><table><tr><th>ID</th><th>Name</th><th>Implementation</th></tr><tr><td>1</td><td><code>liquid</code></td><td>Soft sinusoidal UV flow + pointer ripples</td></tr><tr><td>2</td><td><code>distortion</code></td><td>Pointer-localized vortex field</td></tr><tr><td>3</td><td><code>wobble</code></td><td>Subdivided plane with animated vertex depth</td></tr><tr><td>4</td><td><code>wind</code></td><td>Anchored flag-like vertex displacement</td></tr><tr><td>5</td><td><code>ripple</code></td><td>Concentric radial UV distortion</td></tr><tr><td>6</td><td><code>perlin</code></td><td>Interpolated 3D gradient-noise displacement</td></tr><tr><td>7</td><td><code>cyber</code></td><td>Quantized cell displacement + grid highlights</td></tr></table></div><p>Style 7 is cyber; style 6 is Perlin. This resolves the duplicate style 6 in the supplied examples. Styles 3/4 change actual mesh vertices; other styles primarily distort texture coordinates. These are 3D image surfaces, not volumetric 3D models.</p><p>Every effect reacts to pointer movement; click adds a decaying ripple. A multi-image container also advances on click, Enter/Space or arrows when focusable. Use semantic controls or add a meaningful <code>tabindex</code> and accessible description to interactive wrappers.</p><h2 id="multiple-images-gooey-and-scroll">Multiple images, gooey and scroll</h2><div class="doc-code"><div class="doc-code-bar"><span>html</span><button data-copy-code aria-label="Copy code example 8">Copy code</button></div><pre><code>&lt;div class=&quot;gallery&quot; tabindex=&quot;0&quot; aria-label=&quot;Interactive landscape gallery&quot;&gt;
   &lt;img src=&quot;one.jpg&quot; width=&quot;1200&quot; height=&quot;900&quot; alt=&quot;First landscape&quot;&gt;
   &lt;img src=&quot;two.jpg&quot; width=&quot;1200&quot; height=&quot;900&quot; alt=&quot;Second landscape&quot;&gt;
   &lt;img src=&quot;three.jpg&quot; width=&quot;1200&quot; height=&quot;900&quot; alt=&quot;Third landscape&quot;&gt;
 &lt;/div&gt;
 &lt;script&gt;
-  const gallery = FlowFX.imageEffect(&#x27;.gallery&#x27;, {
+  const gallery = FlowFX.imageEffect('.gallery', {
     style: 3,
     gooey: true,
     scroll: true,
@@ -211,59 +73,21 @@ Every effect reacts to pointer movement; click adds a decaying ripple. A multi-i
     config: { damping: 7, intensity: 0.8 }
   });
   gallery.ready.catch(console.error);
-&lt;/script&gt;
-```
-
-Give the container an explicit width/height. Size its first image to fill it. Additional images are hidden from layout while the effect is active. Textures use centered `object-fit: cover` cropping.
-
-`scroll: true` maps the target&#x27;s viewport traversal to a 0–1 image timeline. `scrollSpeed` changes the timeline sensitivity. `scrollSnapping` rounds progress to image stops (it does not hijack or snap page scrolling). `touchSpeed` scales swipe steps. Native page scrolling is never prevented. For touch scrolling, the scroll timeline is the most reliable control; browser touch gesture cancellation can prevent a swipe-up event.
-
-For a **sticky image and a longer scroll section**, leave `scroll: false` and drive progress yourself (as in `demo/app.js`):
-
-```js
-const fx = FlowFX.imageEffect(&#x27;.gallery&#x27;, { style: 3, gooey: true, click: false });
+&lt;/script&gt;</code></pre></div><p>Give the container an explicit width/height. Size its first image to fill it. Additional images are hidden from layout while the effect is active. Textures use centered <code>object-fit: cover</code> cropping.</p><p><code>scroll: true</code> maps the target's viewport traversal to a 0–1 image timeline. <code>scrollSpeed</code> changes the timeline sensitivity. <code>scrollSnapping</code> rounds progress to image stops (it does not hijack or snap page scrolling). <code>touchSpeed</code> scales swipe steps. Native page scrolling is never prevented. For touch scrolling, the scroll timeline is the most reliable control; browser touch gesture cancellation can prevent a swipe-up event.</p><p>For a <strong>sticky image and a longer scroll section</strong>, leave <code>scroll: false</code> and drive progress yourself (as in <code>demo/app.js</code>):</p><div class="doc-code"><div class="doc-code-bar"><span>js</span><button data-copy-code aria-label="Copy code example 9">Copy code</button></div><pre><code>const fx = FlowFX.imageEffect('.gallery', { style: 3, gooey: true, click: false });
 function onScroll() {
-  const section = document.querySelector(&#x27;.story&#x27;).getBoundingClientRect();
+  const section = document.querySelector('.story').getBoundingClientRect();
   const travel = section.height - window.innerHeight;
   fx.setProgress(Math.max(0, Math.min(1, -section.top / Math.max(1, travel))));
 }
-window.addEventListener(&#x27;scroll&#x27;, onScroll, { passive: true });
-// Remove this listener and call fx.destroy() when unmounting.
-```
-
-When built-in `scroll` is enabled it owns progress; do not also drive `next()` or `setProgress()` on that instance. Use `scroll: false` for manual navigation.
-
-## Configuration and presets
-
-| Config | Default | Range | Meaning |
-| --- | --- | --- | --- |
-| `intensity` | 0.8 | 0–2 | Distortion / vertex amplitude |
-| `speed` | 1 | 0–3 | Shader clock rate; zero freezes the clock |
-| `frequency` | 5 | 1–15 | Spatial frequency / grid density |
-| `zoom` | 0.45 | 0–2 | Pointer/focus zoom amount; zero disables |
-| `chromatic` | 0.7 | 0–2 | Color-channel separation |
-| `damping` | 7 | 1–20 | Response rate; larger means faster settling |
-| `edgeStrength` | 1 | 0–2 | Depth of the hover silhouette cutout |
-
-All seven values live inside `config`. Numbers are clamped to these ranges. Invalid number types are rejected. `hoverMotion`, `transition`, `hoverEdge`, `scrollEffect`, `gooey`, `debug`, `scroll`, `click`, `scrollSnapping`, `scrollSpeed` and `touchSpeed` are top-level options. `onProgress(progress)` receives smoothed timeline progress when a visible instance renders.
-
-```js
-const fx = FlowFX.imageEffect(&#x27;.art&#x27;, {
-  preset: &#x27;./presets/wigglewobble.json&#x27;,
+window.addEventListener('scroll', onScroll, { passive: true });
+// Remove this listener and call fx.destroy() when unmounting.</code></pre></div><p>When built-in <code>scroll</code> is enabled it owns progress; do not also drive <code>next()</code> or <code>setProgress()</code> on that instance. Use <code>scroll: false</code> for manual navigation.</p><h2 id="configuration-and-presets">Configuration and presets</h2><div class="doc-table"><table><tr><th>Config</th><th>Default</th><th>Range</th><th>Meaning</th></tr><tr><td><code>intensity</code></td><td>0.8</td><td>0–2</td><td>Distortion / vertex amplitude</td></tr><tr><td><code>speed</code></td><td>1</td><td>0–3</td><td>Shader clock rate; zero freezes the clock</td></tr><tr><td><code>frequency</code></td><td>5</td><td>1–15</td><td>Spatial frequency / grid density</td></tr><tr><td><code>zoom</code></td><td>0.45</td><td>0–2</td><td>Pointer/focus zoom amount; zero disables</td></tr><tr><td><code>chromatic</code></td><td>0.7</td><td>0–2</td><td>Color-channel separation</td></tr><tr><td><code>damping</code></td><td>7</td><td>1–20</td><td>Response rate; larger means faster settling</td></tr><tr><td><code>edgeStrength</code></td><td>1</td><td>0–2</td><td>Depth of the hover silhouette cutout</td></tr></table></div><p>All seven values live inside <code>config</code>. Numbers are clamped to these ranges. Invalid number types are rejected. <code>hoverMotion</code>, <code>transition</code>, <code>hoverEdge</code>, <code>scrollEffect</code>, <code>gooey</code>, <code>debug</code>, <code>scroll</code>, <code>click</code>, <code>scrollSnapping</code>, <code>scrollSpeed</code> and <code>touchSpeed</code> are top-level options. <code>onProgress(progress)</code> receives smoothed timeline progress when a visible instance renders.</p><div class="doc-code"><div class="doc-code-bar"><span>js</span><button data-copy-code aria-label="Copy code example 10">Copy code</button></div><pre><code>const fx = FlowFX.imageEffect('.art', {
+  preset: './presets/wigglewobble.json',
   debug: true,
   config: { intensity: 1.1 } // Explicit values override the preset.
 });
 await fx.ready;
-fx.setOptions({ style: &#x27;wind&#x27;, gooey: true, config: { speed: 1.4 } });
-const preset = fx.exportPreset(); // Save as JSON.
-```
-
-`debug: true` creates an isolated panel with live ranges and an export text area. Use the demo&#x27;s Export/Import buttons to download/reload JSON. `preset` is read at initialization, and `debug` creates a panel at initialization; use destroy/reinitialize to change these. `setOptions` changes style, gooey, hoverEdge, hoverMotion, transition, scrollEffect, config and interaction options.
-
-## Runtime API
-
-```js
-const fx = FlowFX.imageEffect(&#x27;.art&#x27;, { style: 2 });
+fx.setOptions({ style: 'wind', gooey: true, config: { speed: 1.4 } });
+const preset = fx.exportPreset(); // Save as JSON.</code></pre></div><p><code>debug: true</code> creates an isolated panel with live ranges and an export text area. Use the demo's Export/Import buttons to download/reload JSON. <code>preset</code> is read at initialization, and <code>debug</code> creates a panel at initialization; use destroy/reinitialize to change these. <code>setOptions</code> changes style, gooey, hoverEdge, hoverMotion, transition, scrollEffect, config and interaction options.</p><h2 id="runtime-api">Runtime API</h2><div class="doc-code"><div class="doc-code-bar"><span>js</span><button data-copy-code aria-label="Copy code example 11">Copy code</button></div><pre><code>const fx = FlowFX.imageEffect('.art', { style: 2 });
 await fx.ready;
 fx.setOptions({ config: { intensity: 1.2 } });
 fx.setProgress(0.5); // 0–1 across all images, manual mode.
@@ -274,93 +98,21 @@ fx.play();
 fx.refresh();
 fx.exportPreset();
 fx.destroy();
-FlowFX.destroyAll();
-```
-
-A selector may match several targets; commands apply to the group. `instances` exposes individual handles. `exportPreset()` exports the first instance&#x27;s settings. Duplicate initialization on the same target is rejected. Destroy before reinitializing.
-
-## npm / framework integration
-
-After the npm package is published:
-
-```sh
-npm install okumajs
-```
-
-```js
-import { imageEffect } from &#x27;okumajs&#x27;;
+FlowFX.destroyAll();</code></pre></div><p>A selector may match several targets; commands apply to the group. <code>instances</code> exposes individual handles. <code>exportPreset()</code> exports the first instance's settings. Duplicate initialization on the same target is rejected. Destroy before reinitializing.</p><h2 id="npm-framework-integration">npm / framework integration</h2><p>After the npm package is published:</p><div class="doc-code"><div class="doc-code-bar"><span>sh</span><button data-copy-code aria-label="Copy code example 12">Copy code</button></div><pre><code>npm install okumajs</code></pre></div><div class="doc-code"><div class="doc-code-bar"><span>js</span><button data-copy-code aria-label="Copy code example 13">Copy code</button></div><pre><code>import { imageEffect } from 'okumajs';
 // React: call in useEffect after mount; return () =&gt; fx.destroy().
 // Vue: call in onMounted; destroy in onBeforeUnmount.
-const fx = imageEffect(element, { style: &#x27;wobble&#x27; });
-fx.ready.catch(console.error);
-```
-
-Importing the module in SSR is safe; call `imageEffect` only in the browser after mount. Browser IIFE, bundled ESM and CommonJS outputs all include Three.js. This makes integration simple but the first bundle is comparatively large; this MVP does not yet provide a lean external-Three build.
-
-## Publishing and CDN
-
-Package name: `okumajs`. JavaScript API: `FlowFX`. Source repository: [Luckykumawat/Okumajs](https://github.com/Luckykumawat/Okumajs).
-
-### CDN installation
-
-The verified npm distribution URL for version 0.3.0:
-
-```html
-&lt;script src=&quot;https://cdn.jsdelivr.net/npm/okumajs@0.3.0/dist/flowfx.min.js&quot;&gt;&lt;/script&gt;
+const fx = imageEffect(element, { style: 'wobble' });
+fx.ready.catch(console.error);</code></pre></div><p>Importing the module in SSR is safe; call <code>imageEffect</code> only in the browser after mount. Browser IIFE, bundled ESM and CommonJS outputs all include Three.js. This makes integration simple but the first bundle is comparatively large; this MVP does not yet provide a lean external-Three build.</p><h2 id="publishing-and-cdn">Publishing and CDN</h2><p>Package name: <code>okumajs</code>. JavaScript API: <code>FlowFX</code>. Source repository: <a href="https://github.com/Luckykumawat/Okumajs">Luckykumawat/Okumajs</a>.</p><h3 id="cdn-installation">CDN installation</h3><p>The verified npm distribution URL for version 0.3.0:</p><div class="doc-code"><div class="doc-code-bar"><span>html</span><button data-copy-code aria-label="Copy code example 14">Copy code</button></div><pre><code>&lt;script src=&quot;https://cdn.jsdelivr.net/npm/okumajs@0.3.0/dist/flowfx.min.js&quot;&gt;&lt;/script&gt;
 &lt;script&gt;
-  const cursor = FlowFX.mouseFollower({ style: &#x27;orbit&#x27; });
-  const images = FlowFX.imageEffect(&#x27;.your-gallery&#x27;, FlowFX.imagePresets[&#x27;liquid-silk&#x27;]);
+  const cursor = FlowFX.mouseFollower({ style: 'orbit' });
+  const images = FlowFX.imageEffect('.your-gallery', FlowFX.imagePresets['liquid-silk']);
   images.ready.catch(console.error);
-&lt;/script&gt;
-```
-
-For a single image, `.your-gallery` can be an `&lt;img&gt;`; for click image transitions use a container containing multiple images, as shown above. No extra Three.js or CSS script tags are needed. Scope image selectors to the elements that should animate.
-
-A GitHub-backed CDN URL is also available when the matching release tag is pushed:
-
-```html
-&lt;script src=&quot;https://cdn.jsdelivr.net/gh/Luckykumawat/Okumajs@v0.3.0/dist/flowfx.min.js&quot;&gt;&lt;/script&gt;
-```
-
-The npm and GitHub CDN variants expose the same `FlowFX` API. Pin a release version. Check the release notes for verification/publication status before sharing a distribution URL.
-
-### Maintainer release commands
-
-```sh
-npm ci
+&lt;/script&gt;</code></pre></div><p>For a single image, <code>.your-gallery</code> can be an <code>&lt;img&gt;</code>; for click image transitions use a container containing multiple images, as shown above. No extra Three.js or CSS script tags are needed. Scope image selectors to the elements that should animate.</p><p>A GitHub-backed CDN URL is also available when the matching release tag is pushed:</p><div class="doc-code"><div class="doc-code-bar"><span>html</span><button data-copy-code aria-label="Copy code example 15">Copy code</button></div><pre><code>&lt;script src=&quot;https://cdn.jsdelivr.net/gh/Luckykumawat/Okumajs@v0.3.0/dist/flowfx.min.js&quot;&gt;&lt;/script&gt;</code></pre></div><p>The npm and GitHub CDN variants expose the same <code>FlowFX</code> API. Pin a release version. Check the release notes for verification/publication status before sharing a distribution URL.</p><h3 id="maintainer-release-commands">Maintainer release commands</h3><div class="doc-code"><div class="doc-code-bar"><span>sh</span><button data-copy-code aria-label="Copy code example 16">Copy code</button></div><pre><code>npm ci
 npm test
 npm run build
 npm pack --dry-run
 npm login
 npm whoami
-npm publish --access public
-```
-
-Complete npm login and any two-factor approval in your own browser. Do not commit `.npmrc`, access tokens or node_modules. Once published, the same name/version cannot be overwritten. For subsequent changes increment the package version, rebuild and publish, then create a matching Git tag.
-
-Official references: [npm publish](https://docs.npmjs.com/cli/v11/commands/npm-publish/), [jsDelivr](https://www.jsdelivr.com/documentation).
-
-## Performance, accessibility and MVP boundaries
-
-- One shared transparent fixed WebGL canvas serves all instances; only viewport-visible instances render. The shader clock pauses when the page is hidden. Device pixel ratio is capped at 2.
-- WebGL2-capable browser/device required by the pinned Three.js version. Runtime image loading needs same-origin images or CORS-enabled remote images. Otherwise `ready` rejects and originals remain visible.
-- The canvas is a root overlay at z-index 10. Place intentional overlays above 10. Arbitrary CSS stacking contexts, rotated elements, ancestor clipping, custom object-position, arbitrary CSS rounded masks and modal occlusion are not generalized by this MVP. Use simple rectangular surfaces as demonstrated. Do not use a target inside a CSS-transformed ancestor without further integration work.
-- Resizing the surface is supported. To change image sources or add images, destroy and reinitialize.
-- WebGL context loss destroys effects and restores originals. Reinitialize to resume after context restoration.
-- OS `prefers-reduced-motion` disables ongoing distortion/zoom and snaps transitions to requested progress. Source alternative text remains available. This is not a complete accessibility audit.
-- Click adds a shader ripple; this MVP does not include arbitrary DOM click animations, page transitions, text animations, physics or a no-code builder.
-- `pause()` freezes the selected instance; the other demo surfaces keep moving. The built-in speed setting is separate from pause.
-- Browser rendering/performance should be tested on your actual target mobile devices before a production release.
-
-## Verification
-
-```sh
-npm test
+npm publish --access public</code></pre></div><p>Complete npm login and any two-factor approval in your own browser. Do not commit <code>.npmrc</code>, access tokens or node_modules. Once published, the same name/version cannot be overwritten. For subsequent changes increment the package version, rebuild and publish, then create a matching Git tag.</p><p>Official references: <a href="https://docs.npmjs.com/cli/v11/commands/npm-publish/">npm publish</a>, <a href="https://www.jsdelivr.com/documentation">jsDelivr</a>.</p><h2 id="performance-accessibility-and-mvp-boundaries">Performance, accessibility and MVP boundaries</h2><ul><li>One shared transparent fixed WebGL canvas serves all instances; only viewport-visible instances render. The shader clock pauses when the page is hidden. Device pixel ratio is capped at 2.</li><li>WebGL2-capable browser/device required by the pinned Three.js version. Runtime image loading needs same-origin images or CORS-enabled remote images. Otherwise <code>ready</code> rejects and originals remain visible.</li><li>The canvas is a root overlay at z-index 10. Place intentional overlays above 10. Arbitrary CSS stacking contexts, rotated elements, ancestor clipping, custom object-position, arbitrary CSS rounded masks and modal occlusion are not generalized by this MVP. Use simple rectangular surfaces as demonstrated. Do not use a target inside a CSS-transformed ancestor without further integration work.</li><li>Resizing the surface is supported. To change image sources or add images, destroy and reinitialize.</li><li>WebGL context loss destroys effects and restores originals. Reinitialize to resume after context restoration.</li><li>OS <code>prefers-reduced-motion</code> disables ongoing distortion/zoom and snaps transitions to requested progress. Source alternative text remains available. This is not a complete accessibility audit.</li><li>Click adds a shader ripple; this MVP does not include arbitrary DOM click animations, page transitions, text animations, physics or a no-code builder.</li><li><code>pause()</code> freezes the selected instance; the other demo surfaces keep moving. The built-in speed setting is separate from pause.</li><li>Browser rendering/performance should be tested on your actual target mobile devices before a production release.</li></ul><h2 id="verification">Verification</h2><div class="doc-code"><div class="doc-code-bar"><span>sh</span><button data-copy-code aria-label="Copy code example 17">Copy code</button></div><pre><code>npm test
 npm run build
-npm run dev
-```
-
-Visit `/qa.html` for automated browser integration checks (preset loading, shared canvas, updates, manual navigation, pause/play, destroy/reinitialize, cleanup and invalid preset fallback). Shader compilation errors appear in the browser console. The main demo provides visual checks for all 7 styles, click/keyboard navigation, copy/export/import, scroll progress and responsive layout.
-
-MIT license. See `THIRD_PARTY_NOTICES.md` for bundled Three.js attribution.
-</pre></main></body></html>
+npm run dev</code></pre></div><p>Visit <code>/qa.html</code> for automated browser integration checks (preset loading, shared canvas, updates, manual navigation, pause/play, destroy/reinitialize, cleanup and invalid preset fallback). Shader compilation errors appear in the browser console. The main demo provides visual checks for all 7 styles, click/keyboard navigation, copy/export/import, scroll progress and responsive layout.</p><p>MIT license. See <code>THIRD_PARTY_NOTICES.md</code> for bundled Three.js attribution.</p><h2 id="github-pages-deployment">GitHub Pages deployment</h2><p>The <code>Deploy Okumajs demo and documentation</code> workflow publishes only <code>demo/</code> to GitHub Pages after demo, README, documentation generator or workflow changes are pushed to main. It regenerates documentation from README, checks browser script syntax, and deploys the static artifact. No npm token is required. Demo Copy buttons include the pinned public npm CDN and complete example markup. The library itself remains version 0.3.0; documentation/site updates do not republish npm.</p></main></div><footer><a href="./">← Back to playground</a><span>Okumajs · FlowFX API · MIT license</span><a href="https://www.npmjs.com/package/okumajs">npm package ↗</a></footer><div id="copy-status" role="status" aria-live="polite"></div><script src="docs.js"></script></body></html>

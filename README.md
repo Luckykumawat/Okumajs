@@ -1,5 +1,7 @@
 # FlowFX
 
+**Live demo:** https://luckykumawat.github.io/Okumajs/ · **Documentation:** https://luckykumawat.github.io/Okumajs/guide.html
+
 **Published:** [`okumajs@0.3.0`](https://www.npmjs.com/package/okumajs). [Verified npm CDN](https://cdn.jsdelivr.net/npm/okumajs@0.3.0/dist/flowfx.min.js). Browser API remains `FlowFX`.
 
 A working, framework-independent Three.js image-effects MVP. Original GLSL shaders, image hover response, click ripples, multi-image transitions and scroll control. This is inspired by the supplied interaction brief; it does not wrap or copy Shery.js.
@@ -363,3 +365,7 @@ npm run dev
 Visit `/qa.html` for automated browser integration checks (preset loading, shared canvas, updates, manual navigation, pause/play, destroy/reinitialize, cleanup and invalid preset fallback). Shader compilation errors appear in the browser console. The main demo provides visual checks for all 7 styles, click/keyboard navigation, copy/export/import, scroll progress and responsive layout.
 
 MIT license. See `THIRD_PARTY_NOTICES.md` for bundled Three.js attribution.
+
+## GitHub Pages deployment
+
+The `Deploy Okumajs demo and documentation` workflow publishes only `demo/` to GitHub Pages after demo, README, documentation generator or workflow changes are pushed to main. It regenerates documentation from README, checks browser script syntax, and deploys the static artifact. No npm token is required. Demo Copy buttons include the pinned public npm CDN and complete example markup. The library itself remains version 0.3.0; documentation/site updates do not republish npm.
