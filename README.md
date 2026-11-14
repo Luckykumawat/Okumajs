@@ -1,5 +1,7 @@
 # FlowFX
 
+**Published:** [`okumajs@0.3.0`](https://www.npmjs.com/package/okumajs). [Verified npm CDN](https://cdn.jsdelivr.net/npm/okumajs@0.3.0/dist/flowfx.min.js). Browser API remains `FlowFX`.
+
 A working, framework-independent Three.js image-effects MVP. Original GLSL shaders, image hover response, click ripples, multi-image transitions and scroll control. This is inspired by the supplied interaction brief; it does not wrap or copy Shery.js.
 
 ## Run the lab
@@ -301,7 +303,7 @@ Package name: `okumajs`. JavaScript API: `FlowFX`. Source repository: [Luckykuma
 
 ### CDN installation
 
-The npm distribution URL for version 0.3.0 (available after npm publication):
+The verified npm distribution URL for version 0.3.0:
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/okumajs@0.3.0/dist/flowfx.min.js"></script>

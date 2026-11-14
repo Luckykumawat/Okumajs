@@ -51,3 +51,7 @@ The existing user-requested local demo server was retained for live use.
 - Checked mobile at 390×844: two-column tab layout, document and content widths both 375 CSS pixels. Restored the original viewport afterward.
 - Found and fixed an empty-anchor fallback in tab auto-scrolling; verified category positioning and panel rendering after reloading the correction. Captured console entries from the pre-fix version remained in the browser log; none were newly added during the corrected interaction run.
 - Saved a live screenshot with the Scroll Animations tab selected and a rendered Depth dolly demo. Animation library code and bundles were not changed by this UI-only update.
+
+## npm publication completed
+
+On 14 November 2026, okumajs@0.3.0 was published and became available in the npm registry. Canonical jsDelivr npm CDN retrieval and exact bundle checksum/API smoke checks passed. See PUBLICATION.md for URLs and digests. This supersedes the earlier unpublished status entries.
