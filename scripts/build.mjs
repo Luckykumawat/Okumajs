@@ -1,0 +1,15 @@
+import {build} from 'esbuild';
+import {mkdir,copyFile,readFile,writeFile,cp} from 'node:fs/promises';
+await mkdir('dist',{recursive:true});
+const shared={entryPoints:['src/index.js'],bundle:true,target:['es2020'],legalComments:'eof',sourcemap:true};
+await build({...shared,outfile:'dist/flowfx.min.js',format:'iife',globalName:'FlowFX',minify:true});
+await build({...shared,outfile:'dist/flowfx.esm.js',format:'esm',minify:true});
+await build({...shared,outfile:'dist/flowfx.cjs',format:'cjs',minify:true});
+await copyFile('src/index.d.ts','dist/index.d.ts');
+const license=await readFile('node_modules/three/LICENSE','utf8');
+await writeFile('dist/THREE-LICENSE.txt',license);
+await mkdir('demo/lib',{recursive:true});
+await copyFile('dist/flowfx.min.js','demo/lib/flowfx.min.js');
+await copyFile('dist/flowfx.min.js.map','demo/lib/flowfx.min.js.map');
+await cp('presets','demo/presets',{recursive:true});
+console.log('Built browser, ESM and CommonJS bundles. Three.js is bundled; no extra CDN dependencies.');

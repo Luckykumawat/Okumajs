@@ -1,0 +1,57 @@
+{
+  "name": "okumajs",
+  "version": "0.3.0",
+  "description": "Interactive Three.js image shaders: liquid, wobble, wind, noise and gooey transitions.",
+  "type": "module",
+  "main": "./dist/flowfx.cjs",
+  "module": "./dist/flowfx.esm.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/flowfx.esm.js",
+      "require": "./dist/flowfx.cjs"
+    }
+  },
+  "unpkg": "dist/flowfx.min.js",
+  "jsdelivr": "dist/flowfx.min.js",
+  "files": [
+    "dist",
+    "presets",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/serve.mjs",
+    "test": "node --test test/*.test.mjs",
+    "prepublishOnly": "npm test && npm run build"
+  },
+  "keywords": [
+    "threejs",
+    "webgl",
+    "image-effects",
+    "liquid",
+    "animation"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "0.25.12"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Luckykumawat/Okumajs.git"
+  },
+  "homepage": "https://github.com/Luckykumawat/Okumajs#readme",
+  "bugs": {
+    "url": "https://github.com/Luckykumawat/Okumajs/issues"
+  },
+  "author": "Luckykumawat",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
