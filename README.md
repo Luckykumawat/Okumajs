@@ -20,12 +20,6 @@ Open http://127.0.0.1:4173. Keep the terminal running; Ctrl+C stops it. The incl
 
 The demo uses original local SVG artworks. There are no runtime image, font or third-party script requests. Replace them with your own photographs to use the same effects with photography.
 
-## Live card customization
-
-Every animation card now includes independent speed, intensity and color controls, a live full-code preview, Copy my settings and Reset. Image and scroll cards apply intensity directly to the shader and use the selected color for the HTML frame and transparent edge cutouts. That frame color is exported as CSS in the snippet, not as an unsupported library option. Cursor cards use color for the actual follower and map intensity to size/spread; speed controls following response. Changes also apply to a selected page-wide cursor. Reset restores only the selected card. All copied snippets continue to use the published okumajs@0.3.0 CDN.
-
-The demo and documentation use a midnight-blue, cyan and coral interface theme.
-
 ## Demo categories
 
 The lab now uses separate tabs: **Hover & Click** (10 image card designs and playground), **Mouse Followers** (10 cursor styles), **Scroll Animations** (4 studies + multi-image scroll), and **Get Started** (integration and publishing).

@@ -11,23 +11,21 @@ const effects=[
   ['Perlin drift','Layered gradient noise. Organic displacement.','tide'],
   ['Cyber mosaic','Quantized motion meets a luminous grid.','violet']
 ];
-const followerCardStates=new Map(),followerEditors=new Map();
 const presetKeys=['liquid-silk','vortex-distortion','elastic-terrain','wind-sculpture','radial-ripple','perlin-drift','cyber-mosaic'];
 const mainDesign={hoverMotion:'tilt',transition:'liquid'};
 let main,paused=false,toastTimer;
 const initial={intensity:.85,speed:.9,frequency:5,zoom:.5,chromatic:.7,damping:7,edgeStrength:1};
 const base={...initial};
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3000);}
-function settings(){const config={...base};for(const key of ['intensity','speed','frequency','chromatic'])config[key]=Number($(key).value);config.zoom=$('zoom').checked?(base.zoom||.5):0;return {...mainDesign,frameColor:$('main-frame').value,style:Number($('effect').value),gooey:$('gooey').checked,hoverEdge:$('hover-edge').value,config};}
+function settings(){const config={...base};for(const key of ['intensity','speed','frequency','chromatic'])config[key]=Number($(key).value);config.zoom=$('zoom').checked?(base.zoom||.5):0;return {...mainDesign,style:Number($('effect').value),gooey:$('gooey').checked,hoverEdge:$('hover-edge').value,config};}
 function imageCode(options,key='gallery',single=false){
  const className='okuma-'+key;
- const {frameColor='#43d9e6',...effectOptions}=options;
  const sources=(single?['dunes']:['dunes','violet','tide']).map((name,i)=>`  <img src="${EXAMPLE_ASSETS+name}.svg" alt="${name} landscape"\n       style="${i?'display:none':'display:block;width:100%;height:100%;object-fit:cover'}">`).join('\n');
- return `<!-- Include the CDN script once per page. Replace image URLs with yours. -->\n<script src="${CDN_URL}"><\/script>\n\n<div style="background:${frameColor};padding:6px;border-radius:12px;width:min(100%,800px);${options.scroll?'margin:70vh auto;':''}">\n<div class="${className}" tabindex="0"\n     aria-label="Interactive image gallery"\n     style="width:100%;height:480px">\n${sources}\n</div>\n</div>\n\n<script>\n(() => {\n  const fx = FlowFX.imageEffect(".${className}", ${JSON.stringify(effectOptions,null,2).replace(/\n/g,'\n  ')});\n  fx.ready.catch(console.error);\n  // Call fx.destroy() when removing this gallery.\n})();\n<\/script>`;
+ return `<!-- Include the CDN script once per page. Replace image URLs with yours. -->\n<script src="${CDN_URL}"><\/script>\n\n<div class="${className}" tabindex="0"\n     aria-label="Interactive image gallery"\n     style="width:min(100%,800px);height:480px;${options.scroll?'margin:70vh auto;':''}">\n${sources}\n</div>\n\n<script>\n(() => {\n  const fx = FlowFX.imageEffect(".${className}", ${JSON.stringify(options,null,2).replace(/\n/g,'\n  ')});\n  fx.ready.catch(console.error);\n  // Call fx.destroy() when removing this gallery.\n})();\n<\/script>`;
 }
 function localCode(){return imageCode(settings(),'playground');}
-function sync(){const options=settings();document.querySelector('.stage-wrap').style.background=options.frameColor;document.querySelector('.stage-wrap').style.padding='6px';main?.setOptions(options);$('effect-title').textContent=effects[options.style-1][0];$('style-number').textContent=String(options.style).padStart(2,'0');for(const key of ['intensity','speed','frequency','chromatic'])$(key+'-value').value=Number($(key).value).toFixed(2);$('install-code').textContent=localCode();$('main-code-preview').textContent=localCode();$('design-summary').textContent=`HOVER / ${mainDesign.hoverMotion.toUpperCase()} · CLICK / ${mainDesign.transition.toUpperCase()}`;}
-function applyImagePreset(preset){$('main-frame').value=preset.frameColor??'#43d9e6';Object.assign(base,initial,preset.config);Object.assign(mainDesign,{hoverMotion:preset.hoverMotion??'none',transition:preset.transition??'liquid'});$('effect').value=String(preset.style);$('hover-edge').value=preset.hoverEdge??'none';$('gooey').checked=!!preset.gooey;$('zoom').checked=(base.zoom??0)>0;for(const key of ['intensity','speed','frequency','chromatic'])$(key).value=String(base[key]);sync();}
+function sync(){const options=settings();main?.setOptions(options);$('effect-title').textContent=effects[options.style-1][0];$('style-number').textContent=String(options.style).padStart(2,'0');for(const key of ['intensity','speed','frequency','chromatic'])$(key+'-value').value=Number($(key).value).toFixed(2);$('install-code').textContent=localCode();$('design-summary').textContent=`HOVER / ${mainDesign.hoverMotion.toUpperCase()} · CLICK / ${mainDesign.transition.toUpperCase()}`;}
+function applyImagePreset(preset){Object.assign(base,initial,preset.config);Object.assign(mainDesign,{hoverMotion:preset.hoverMotion??'none',transition:preset.transition??'liquid'});$('effect').value=String(preset.style);$('hover-edge').value=preset.hoverEdge??'none';$('gooey').checked=!!preset.gooey;$('zoom').checked=(base.zoom??0)>0;for(const key of ['intensity','speed','frequency','chromatic'])$(key).value=String(base[key]);sync();}
 async function copy(value){try{await navigator.clipboard.writeText(value);toast('Copied. Make something move.');}catch{const area=document.createElement('textarea');area.value=value;document.body.append(area);area.select();const ok=document.execCommand('copy');area.remove();toast(ok?'Copied to clipboard.':'Clipboard unavailable. Use the example below.');}}
 function download(value,name){const url=URL.createObjectURL(new Blob([value],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function failed(error){console.error(error);$('render-status').textContent='STATIC FALLBACK';$('motion-note').textContent='WebGL could not start. Original images remain visible. '+error.message;toast('WebGL unavailable — showing original images.');}
@@ -41,30 +39,26 @@ async function init(){
     const card=document.createElement('article');card.className='effect-card';
     card.innerHTML=`<div class="effect-image" id="effect-${i+1}" tabindex="0" role="button" aria-label="${name}. Hover to reshape edges. Click or press Enter for next image."><img src="assets/${asset}.svg" alt="Original ${asset} artwork" width="1200" height="900"><img src="assets/${asset==='ember'?'tide':'ember'}.svg" width="1200" height="900" alt="Alternate landscape"><img src="assets/${asset==='violet'?'dunes':'violet'}.svg" width="1200" height="900" alt="Third landscape"><div class="effect-card-top"><span>F / ${String(i+1).padStart(3,'0')}</span><span id="card-index-${i+1}">01 / 03</span></div></div><div class="card-info"><div><h3>${name}</h3><p>${description}</p></div><div class="card-actions"><button aria-label="Open ${name} in playground">↗</button><button data-copy aria-label="Copy ${name} preset">Copy</button></div></div>`;
     grid.append(card);
-    card.querySelector('button').addEventListener('click',()=>{applyImagePreset(design);$('playground').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});toast(`${name} loaded in playground`);});
-    card.querySelector('[data-copy]').addEventListener('click',()=>copy(imageCode(design,presetKeys[i])));
-    const design=structuredClone(FlowFX.imagePresets[presetKeys[i]]);card.querySelector('.card-info p').textContent+=` Hover: ${design.hoverMotion} · Click: ${design.transition}`;
-    try{const fx=FlowFX.imageEffect(`#effect-${i+1}`,{...design,onProgress:p=>{$('card-index-'+(i+1)).textContent=String(Math.round(p*2)+1).padStart(2,'0')+' / 03';}});mountImageEditor(card,fx,design,presetKeys[i],name,'#effect-'+(i+1));fx.ready.catch(error=>console.warn(name,error));}catch(error){console.warn(error);}
+    card.querySelector('button').addEventListener('click',()=>{applyImagePreset(FlowFX.imagePresets[presetKeys[i]]);$('playground').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});toast(`${name} loaded in playground`);});
+    card.querySelector('[data-copy]').addEventListener('click',()=>copy(imageCode(FlowFX.imagePresets[presetKeys[i]],presetKeys[i])));
+    const design=FlowFX.imagePresets[presetKeys[i]];card.querySelector('.card-info p').textContent+=` Hover: ${design.hoverMotion} · Click: ${design.transition}`;
+    try{const fx=FlowFX.imageEffect(`#effect-${i+1}`,{...design,onProgress:p=>{$('card-index-'+(i+1)).textContent=String(Math.round(p*2)+1).padStart(2,'0')+' / 03';}});fx.ready.catch(error=>console.warn(name,error));}catch(error){console.warn(error);}
   });
   initNewStudies();
   syncCategoryFromHash(false);
   try{
     const scroller=FlowFX.imageEffect('#scroll-stage',{style:'wobble',gooey:true,click:false,config:{intensity:.65,zoom:0},onProgress:p=>{$('scroll-percent').textContent=Math.round(p*100)+'%';$('scroll-bar').style.width=p*100+'%';}});
-    const galleryDesign={style:'wobble',gooey:true,scroll:true,click:false,config:{intensity:.65,speed:1,zoom:0}};
-    const galleryEditor=document.createElement('div');galleryEditor.className='gallery-editor';document.querySelector('.scroll-layout').before(galleryEditor);
-    mountImageEditor(galleryEditor,scroller,galleryDesign,'scroll-gallery','Scroll gallery','#scroll-stage');
-    $('copy-scroll-gallery').onclick=()=>copy(imageCode(galleryDesign,'scroll-gallery'));
     await scroller.ready;
     const timeline=()=>{const rect=document.querySelector('.scroll-layout').getBoundingClientRect();const stage=$('scroll-stage').getBoundingClientRect();const travel=rect.height-stage.height-80;scroller.setProgress(Math.max(0,Math.min(1,(40-rect.top)/Math.max(1,travel))));};
     window.addEventListener('scroll',timeline,{passive:true});window.addEventListener('resize',timeline);timeline();
   }catch(error){console.warn('Scroll example:',error);}
 }
 $('effect').addEventListener('input',()=>applyImagePreset(FlowFX.imagePresets[presetKeys[Number($('effect').value)-1]]));
-for(const id of ['main-frame','hover-edge','intensity','speed','frequency','chromatic','gooey','zoom'])$(id).addEventListener('input',sync);
+for(const id of ['hover-edge','intensity','speed','frequency','chromatic','gooey','zoom'])$(id).addEventListener('input',sync);
 $('next').addEventListener('click',()=>main?.next());$('previous').addEventListener('click',()=>main?.previous());
 $('pause').addEventListener('click',()=>{paused=!paused;main?.[paused?'pause':'play']();$('pause').textContent=paused?'▶ Play':'Ⅱ Pause';});
-$('reset').addEventListener('click',()=>{Object.assign(base,initial);Object.assign(mainDesign,{hoverMotion:'tilt',transition:'liquid'});$('effect').value='1';$('main-frame').value='#43d9e6';$('hover-edge').value='wave';for(const key of ['intensity','speed','frequency','chromatic'])$(key).value=String(base[key]);$('gooey').checked=true;$('zoom').checked=true;main?.setProgress(0);if(paused)$('pause').click();sync();toast('Back to the first current.');});
-
+$('reset').addEventListener('click',()=>{Object.assign(base,initial);Object.assign(mainDesign,{hoverMotion:'tilt',transition:'liquid'});$('effect').value='1';$('hover-edge').value='wave';for(const key of ['intensity','speed','frequency','chromatic'])$(key).value=String(base[key]);$('gooey').checked=true;$('zoom').checked=true;main?.setProgress(0);if(paused)$('pause').click();sync();toast('Back to the first current.');});
+$('copy-scroll-gallery').addEventListener('click',()=>copy(imageCode({style:'wobble',gooey:true,scroll:true,click:false,config:{intensity:.65,zoom:0}},'scroll-gallery')));
 $('copy-code').addEventListener('click',()=>copy(localCode()));$('copy-install').addEventListener('click',()=>copy(localCode()));
 $('export').addEventListener('click',()=>download(JSON.stringify(main?.exportPreset()??{version:1,...settings()},null,2),'flowfx-preset.json'));
 $('import').addEventListener('click',()=>$('preset-file').click());
@@ -93,9 +87,9 @@ function initNewStudies(){
     const card=document.createElement('article');card.className='edge-card';
     card.innerHTML=`<div class="edge-surface" id="edge-${mode}" tabindex="0" role="button" aria-label="${name}. Hover to morph edges, click for next image."><img src="assets/${asset}.svg" width="1200" height="900" alt="${asset} landscape"><img src="assets/ember.svg" width="1200" height="900" alt="Ember landscape"><img src="assets/${asset==='tide'?'violet':'tide'}.svg" width="1200" height="900" alt="Another landscape"></div><div class="edge-card-caption"><h3>${name}</h3><span id="edge-index-${mode}">01 / 03</span></div><p>${description}</p><span class="study-hint">HOVER TO RESHAPE · CLICK TO CHANGE</span><button class="quiet edge-copy">Copy this card ↗</button>`;
     $('edge-grid').append(card);
-    const design=structuredClone(FlowFX.imagePresets[{'wave':'tidal-edges','blob':'living-silhouette','scallop':'scalloped-frame'}[mode]]);
+    const design=FlowFX.imagePresets[{'wave':'tidal-edges','blob':'living-silhouette','scallop':'scalloped-frame'}[mode]];
     card.querySelector('button.edge-copy').addEventListener('click',()=>copy(imageCode(design,'edge-'+mode)));
-    try{const fx=FlowFX.imageEffect('#edge-'+mode,{...design,onProgress:p=>{$('edge-index-'+mode).textContent=String(Math.round(p*2)+1).padStart(2,'0')+' / 03';}});mountImageEditor(card,fx,design,'edge-'+mode,name,'#edge-'+mode);fx.ready.catch(console.warn);}catch(error){console.warn(error);}
+    try{const fx=FlowFX.imageEffect('#edge-'+mode,{...design,onProgress:p=>{$('edge-index-'+mode).textContent=String(Math.round(p*2)+1).padStart(2,'0')+' / 03';}});fx.ready.catch(console.warn);}catch(error){console.warn(error);}
   }
   const definitions=[
     ['depth','Depth dolly','A perspective shear, a slow push inward, and a drifting texture.','dunes',3],
@@ -111,7 +105,6 @@ function initNewStudies(){
     section.querySelector('button').addEventListener('click',()=>copy(imageCode({...options,scroll:true},'scroll-'+mode,true)));
     try{
       const fx=FlowFX.imageEffect('#study-surface-'+mode,{...options,onProgress:p=>{$('study-percent-'+mode).value=Math.round(p*100)+'%';$('study-bar-'+mode).style.width=p*100+'%';}});
-      mountImageEditor(section.querySelector('.study-copy'),fx,options,'scroll-'+mode,name,'#study-surface-'+mode,true);
       const timeline=()=>{const r=section.getBoundingClientRect();const span=Math.max(1,r.height-window.innerHeight*.25);fx.setProgress(Math.max(0,Math.min(1,(window.innerHeight*.55-r.top)/span)));};
       fx.ready.then(timeline).catch(console.warn);
       window.addEventListener('scroll',timeline,{passive:true});window.addEventListener('resize',timeline);timeline();
@@ -123,20 +116,18 @@ function initNewStudies(){
 let pageFollower, selectedFollower='aura';
 const followerPreviews=[];
 const followerDescriptions={aura:'A soft radial glow and elastic mint ring.',orbit:'Three rotating orbits with satellite particles.',comet:'A tapered coral trail with a glowing solar head.',ribbon:'Two electric strands weaving through your path.',magnetic:'A velocity-stretched ring with four magnetic poles.',fireflies:'Eight luminous motes with individual flight paths.',pixel:'Grid-snapped candy blocks with a stepped trail.',ink:'Overlapping navy droplets that pool into a brush.',compass:'A directional diamond, north marker and compass ring.',text:'Rotating rose lettering orbiting your pointer.'};
-function followerOptions(style=selectedFollower){return {...(followerCardStates.get(style)??{style,...FlowFX.followerStyles[style],size:32,speed:12})};}
+function followerOptions(style=selectedFollower){const palette=FlowFX.followerStyles[style];return {style,color:style===selectedFollower?$('follower-color').value:palette.color,accent:palette.accent,size:style===selectedFollower?Number($('follower-size').value):32};}
 function followerCode(options=followerOptions()){return `<!-- Include the CDN script once per page. -->\n<script src="${CDN_URL}"><\/script>\n<script>\n  window.okumaCursor?.destroy();\n  window.okumaCursor = FlowFX.mouseFollower(${JSON.stringify(options,null,2)});\n  // Remove later: window.okumaCursor.destroy();\n<\/script>`;}
-function syncFollower(){const state=followerCardStates.get(selectedFollower);if(state&&pageFollower){state.color=$('follower-color').value;state.size=Number($('follower-size').value);pageFollower.setOptions(state);followerEditors.get(selectedFollower)?.apply();followerEditors.get(selectedFollower)?.refresh();} $('follower-code').textContent=followerCode();}
+function syncFollower(){const options=followerOptions();if(pageFollower)pageFollower.setOptions(options);$('follower-code').textContent=followerCode(options);}
 function stopFollower(){pageFollower?.destroy();pageFollower=undefined;for(const preview of followerPreviews)preview.setEnabled(true);$('follower-status').textContent='CARD PREVIEWS · NATIVE POINTER ON';for(const el of document.querySelectorAll('.follower-use')){el.setAttribute('aria-pressed','false');el.textContent='Use on page ↗';}for(const id of ['follower-color','follower-size','stop-follower'])$(id).disabled=true;}
 function initFollowers(){
  for(const [i,[style,palette]] of Object.entries(FlowFX.followerStyles).entries()){
   const card=document.createElement('article');card.className='follower-card';card.dataset.style=style;card.style.setProperty('--follower-color',palette.color);
   card.innerHTML=`<div class="follower-preview ${style==='ink'?'on-paper':''}" id="follower-preview-${style}" aria-label="${palette.name} mouse follower preview"><span class="follower-number">CURSOR / ${String(i+1).padStart(2,'0')}</span><span class="follower-stage-label">${style==='text'?'READ THE ROOM':'MAKE YOUR MARK'}</span><span class="follower-touch-hint">MOVE YOUR MOUSE HERE</span></div><div class="follower-card-info"><h3>${palette.name}</h3><span class="follower-swatch" style="background:${palette.color}"></span><p>${followerDescriptions[style]}</p><div class="follower-actions"><button class="follower-use" aria-pressed="false" aria-label="Use ${palette.name} on page">Use on page ↗</button><button class="follower-copy" aria-label="Copy ${palette.name} code">Copy code</button></div></div>`;
   $('follower-grid').append(card);
-  const state={style,color:palette.color,accent:palette.accent,size:style==='text'?38:32,speed:12};followerCardStates.set(style,state);
-  const preview=FlowFX.mouseFollower({...state,target:'#follower-preview-'+style,idleAnimation:true});followerPreviews.push(preview);
-  followerEditors.set(style,mountFollowerEditor(card,preview,state,palette.name));
+  const preview=FlowFX.mouseFollower({style,target:'#follower-preview-'+style,idleAnimation:true,size:style==='text'?38:32});followerPreviews.push(preview);
   card.querySelector('.follower-use').addEventListener('click',()=>{
-    stopFollower();selectedFollower=style;$('follower-color').value=state.color;$('follower-size').value=String(state.size);
+    stopFollower();selectedFollower=style;$('follower-color').value=palette.color;$('follower-size').value='32';
     pageFollower=FlowFX.mouseFollower(followerOptions(style));for(const p of followerPreviews)p.setEnabled(false);
     $('follower-status').textContent=palette.name.toUpperCase()+' · ACTIVE ON PAGE';for(const id of ['follower-color','follower-size','stop-follower'])$(id).disabled=false;
     card.querySelector('.follower-use').setAttribute('aria-pressed','true');card.querySelector('.follower-use').textContent='Active on page ✓';syncFollower();toast(palette.name+' is following you.');
@@ -193,46 +184,5 @@ function initCategories(){
  window.addEventListener('popstate',()=>syncCategoryFromHash());
 }
 
-
-
-const framePalette=['#43d9e6','#a69bff','#ff929a','#6da9ff','#ffb46b','#6be4c1','#d68aff'];
-let frameIndex=0;
-function customizationPanel(host,name,state,{speedMax=3,speedMin=0,readIntensity,applyIntensity,code,apply,reset}){
- const panel=document.createElement('section');panel.className='card-customizer';panel.setAttribute('aria-label',name+' live customization');
- panel.innerHTML=`<div class="customizer-heading"><span>LIVE CUSTOMIZATION</span><span class="live-dot">LIVE</span></div><label class="card-control"><span>Speed <output data-value="speed"></output></span><input data-setting="speed" type="range" min="${speedMin}" max="${speedMax}" step="0.05" aria-label="${name} speed"></label><label class="card-control"><span>Intensity <output data-value="intensity"></output></span><input data-setting="intensity" type="range" min="0" max="2" step="0.05" aria-label="${name} intensity"></label><label class="card-color"><span>${state.config?'Frame color':'Color'} <output data-value="color"></output></span><input data-setting="color" type="color" aria-label="${name} color"></label><details class="card-code" open><summary>Code preview <span>HTML + CDN + JS</span></summary><pre><code></code></pre></details><div class="customizer-actions"><button data-copy-custom>Copy my settings ↗</button><button data-reset-custom>Reset</button></div>`;
- host.append(panel);
- const controls=Object.fromEntries([...panel.querySelectorAll('[data-setting]')].map(el=>[el.dataset.setting,el]));
- function refresh(){
-  const speed=state.config?state.config.speed:state.speed;
-  controls.speed.value=String(speed);controls.intensity.value=String(readIntensity());controls.color.value=state.frameColor??state.color;
-  panel.querySelector('[data-value="speed"]').value=Number(speed).toFixed(2);
-  panel.querySelector('[data-value="intensity"]').value=Number(readIntensity()).toFixed(2);
-  panel.querySelector('[data-value="color"]').value=controls.color.value.toUpperCase();
-  panel.querySelector('code').textContent=code();
- }
- for(const [key,control] of Object.entries(controls))control.addEventListener('input',()=>{
-  if(key==='speed'){if(state.config)state.config.speed=Number(control.value);else state.speed=Number(control.value);}
-  if(key==='intensity')applyIntensity(Number(control.value));
-  if(key==='color'){if(state.config)state.frameColor=control.value;else state.color=control.value;}
-  apply();refresh();
- });
- panel.querySelector('[data-copy-custom]').addEventListener('click',()=>copy(code()));
- panel.querySelector('[data-reset-custom]').addEventListener('click',()=>{reset();apply();refresh();});refresh();
- return {panel,refresh};
-}
-function mountImageEditor(host,fx,state,key,name,selector,single=false){
- state.config={speed:1,intensity:.8,...state.config};state.frameColor=framePalette[frameIndex++%framePalette.length];
- const original=structuredClone(state),target=document.querySelector(selector);
- const frame=document.createElement('div');frame.className='custom-image-frame';target.before(frame);frame.append(target);
- const apply=()=>{fx.setOptions({config:state.config});frame.style.background=state.frameColor;target.style.background=state.frameColor;frame.style.setProperty('--card-accent',state.frameColor);};
- const editor=customizationPanel(host,name,state,{readIntensity:()=>state.config.intensity,applyIntensity:n=>state.config.intensity=n,code:()=>imageCode({...state,scroll:single||state.scroll},key,single),apply,reset:()=>{for(const k of Object.keys(state))delete state[k];Object.assign(state,structuredClone(original));}});
- editor.panel.insertAdjacentHTML('afterbegin','<p class="customizer-note">Color changes the frame and visible edge cutouts.</p>');apply();return editor;
-}
-function mountFollowerEditor(host,preview,state,name){
- const original=structuredClone(state),baseSize=state.size;
- const apply=()=>{preview.setOptions(state);host.querySelector('.follower-swatch').style.background=state.color;if(pageFollower&&selectedFollower===state.style){pageFollower.setOptions(state);$('follower-color').value=state.color;$('follower-size').value=String(state.size);} $('follower-code').textContent=followerCode();};
- const editor=customizationPanel(host,name,state,{speedMin:1,speedMax:30,readIntensity:()=>state.size/baseSize,applyIntensity:n=>state.size=Math.max(12,baseSize*n),code:()=>followerCode(state),apply,reset:()=>Object.assign(state,original)});
- editor.apply=apply;editor.panel.insertAdjacentHTML('afterbegin','<p class="customizer-note">Intensity controls size and spread; speed controls follow response.</p>');return editor;
-}
 initCategories();syncCategoryFromHash(false);
 if(window.FlowFX){initFollowers();init();}else failed(new Error('Build the library first with npm run build.'));
