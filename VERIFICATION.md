@@ -55,3 +55,12 @@ The existing user-requested local demo server was retained for live use.
 ## npm publication completed
 
 On 14 November 2026, okumajs@0.3.0 was published and became available in the npm registry. Canonical jsDelivr npm CDN retrieval and exact bundle checksum/API smoke checks passed. See PUBLICATION.md for URLs and digests. This supersedes the earlier unpublished status entries.
+
+## Live card customization and midnight theme
+
+- Added independent speed, intensity and color controls, live full HTML/CDN/JS previews, current-settings copying and reset on 25 cards (10 image, 10 follower, 5 scroll), plus frame color and inline code preview in the main playground.
+- Image color is exported as HTML/CSS frame and edge-cutout color; cursor color changes the actual follower. Follower intensity maps to size/spread and speed maps to following response. All settings use the existing published 0.3.0 API.
+- 101 browser customization checks passed: all editors initialize; each card's controls update runnable generated code; changes stay isolated; copy uses the exact current preview; reset restores the original snippet.
+- Live UI check: changing Violet orbit speed to 30 and intensity to 2 updates the preview to speed 30 and size 64.
+- Mobile check at 390×844 found 25 editors and equal document/content widths of 375 CSS px (no page overflow). Original viewport restored.
+- Replaced cream/green UI with midnight-blue surfaces, cyan controls and coral accents across the demo and generated documentation.
