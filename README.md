@@ -20,6 +20,12 @@ Open http://127.0.0.1:4173. Keep the terminal running; Ctrl+C stops it. The incl
 
 The demo uses original local SVG artworks. There are no runtime image, font or third-party script requests. Replace them with your own photographs to use the same effects with photography.
 
+## Customize any animation card
+
+Every animation card has a **Customize** button. Controls stay collapsed until opened, preserving the original cream/green layout. Inside, adjust speed, intensity and color; the live code preview and Copy my settings button always reflect that card's current values. Reset affects only that card. Close customization or press Escape to return to the compact card.
+
+For image/scroll effects, color changes the frame and transparent edge cutouts and is copied as HTML/CSS. The original image frame remains unchanged until a color is selected; Reset restores it. For followers, color changes the drawn follower, intensity controls size/spread, and speed controls following response. Settings remain independent across all 25 cards and use the published okumajs@0.3.0 API.
+
 ## Demo categories
 
 The lab now uses separate tabs: **Hover & Click** (10 image card designs and playground), **Mouse Followers** (10 cursor styles), **Scroll Animations** (4 studies + multi-image scroll), and **Get Started** (integration and publishing).

@@ -55,3 +55,11 @@ The existing user-requested local demo server was retained for live use.
 ## npm publication completed
 
 On 14 November 2026, okumajs@0.3.0 was published and became available in the npm registry. Canonical jsDelivr npm CDN retrieval and exact bundle checksum/API smoke checks passed. See PUBLICATION.md for URLs and digests. This supersedes the earlier unpublished status entries.
+
+## Optional customization with the original UI
+
+- Restored independent customization on all 25 cards behind an explicit Customize button. Panels start collapsed, can be closed, and support Escape to close/focus the button.
+- Preserved the original cream/green CSS variables, layout and documentation theme. Original image frames stay untouched until the user chooses a frame color; Reset removes the custom frame.
+- 176 browser checks passed: initial collapse, opening, live option/code changes, isolation, exact copy, reset and closing for every card.
+- Live local UI check confirmed the original body color rgb(243,242,235), 25 Customize buttons, and only one opened panel after selecting Violet orbit. Speed edits update that card's preview to speed 30.
+- Generated snippets use the existing published npm 0.3.0 APIs; image frame styling remains ordinary HTML/CSS.
