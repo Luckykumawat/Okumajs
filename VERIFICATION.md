@@ -63,3 +63,10 @@ On 14 November 2026, okumajs@0.3.0 was published and became available in the npm
 - 176 browser checks passed: initial collapse, opening, live option/code changes, isolation, exact copy, reset and closing for every card.
 - Live local UI check confirmed the original body color rgb(243,242,235), 25 Customize buttons, and only one opened panel after selecting Violet orbit. Speed edits update that card's preview to speed 30.
 - Generated snippets use the existing published npm 0.3.0 APIs; image frame styling remains ordinary HTML/CSS.
+
+
+## Customize popup update
+- All 25 cards open a native modal containing independent live preview, speed/intensity/color controls, and generated copyable code.
+- Browser QA: all 252 popup checks passed, including preview rendering, settings isolation, current-code copy, reset, and close.
+- Desktop three-column layout and 390×844 mobile layout visually checked; mobile dialog has no horizontal overflow. Scroll preview scrubber checked at 100%.
+- Original cream/green theme retained.

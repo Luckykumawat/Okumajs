@@ -22,7 +22,7 @@ The demo uses original local SVG artworks. There are no runtime image, font or t
 
 ## Customize any animation card
 
-Every animation card has a **Customize** button. Controls stay collapsed until opened, preserving the original cream/green layout. Inside, adjust speed, intensity and color; the live code preview and Copy my settings button always reflect that card's current values. Reset affects only that card. Close customization or press Escape to return to the compact card.
+Every animation card has a **Customize** button. Clicking Customize opens a popup with the animation’s live preview, settings and code visible together, preserving the original cream/green page layout. Inside, adjust speed, intensity and color; the live code preview and Copy my settings button always reflect that card's current values. Reset affects only that card. Close the popup with the close button, Escape or a backdrop click; focus returns to Customize. Scroll effects include a progress scrubber so they can be previewed without leaving the popup. On mobile the preview stays visible while the controls and code scroll.
 
 For image/scroll effects, color changes the frame and transparent edge cutouts and is copied as HTML/CSS. The original image frame remains unchanged until a color is selected; Reset restores it. For followers, color changes the drawn follower, intensity controls size/spread, and speed controls following response. Settings remain independent across all 25 cards and use the published okumajs@0.3.0 API.
 

@@ -30,7 +30,7 @@ function imageCode(options,key='gallery',single=false){
 function localCode(){return imageCode(settings(),'playground');}
 function sync(){const options=settings();main?.setOptions(options);$('effect-title').textContent=effects[options.style-1][0];$('style-number').textContent=String(options.style).padStart(2,'0');for(const key of ['intensity','speed','frequency','chromatic'])$(key+'-value').value=Number($(key).value).toFixed(2);$('install-code').textContent=localCode();$('design-summary').textContent=`HOVER / ${mainDesign.hoverMotion.toUpperCase()} · CLICK / ${mainDesign.transition.toUpperCase()}`;}
 function applyImagePreset(preset){Object.assign(base,initial,preset.config);Object.assign(mainDesign,{hoverMotion:preset.hoverMotion??'none',transition:preset.transition??'liquid'});$('effect').value=String(preset.style);$('hover-edge').value=preset.hoverEdge??'none';$('gooey').checked=!!preset.gooey;$('zoom').checked=(base.zoom??0)>0;for(const key of ['intensity','speed','frequency','chromatic'])$(key).value=String(base[key]);sync();}
-async function copy(value){try{await navigator.clipboard.writeText(value);toast('Copied. Make something move.');}catch{const area=document.createElement('textarea');area.value=value;document.body.append(area);area.select();const ok=document.execCommand('copy');area.remove();toast(ok?'Copied to clipboard.':'Clipboard unavailable. Use the example below.');}}
+async function copy(value){try{await navigator.clipboard.writeText(value);toast('Copied. Make something move.');return true;}catch{const area=document.createElement('textarea');area.value=value;document.body.append(area);area.select();const ok=document.execCommand('copy');area.remove();toast(ok?'Copied to clipboard.':'Clipboard unavailable. Use the example below.');return ok;}}
 function download(value,name){const url=URL.createObjectURL(new Blob([value],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function failed(error){console.error(error);$('render-status').textContent='STATIC FALLBACK';$('motion-note').textContent='WebGL could not start. Original images remain visible. '+error.message;toast('WebGL unavailable — showing original images.');}
 async function init(){
@@ -198,15 +198,19 @@ function initCategories(){
 
 
 let customizerIndex=0;
-function customizationPanel(host,name,state,{speedMax=3,speedMin=0,readIntensity,applyIntensity,code,apply,reset}){
+function customizationPanel(host,name,state,{speedMax=3,speedMin=0,readIntensity,applyIntensity,code,apply,reset,preview}){
  const panel=document.createElement('section');panel.className='card-customizer';panel.id='customize-panel-'+(++customizerIndex);panel.hidden=true;panel.setAttribute('aria-label',name+' live customization');
  panel.innerHTML=`<div class="customizer-heading"><span>LIVE CUSTOMIZATION</span><span class="live-dot">LIVE</span></div><label class="card-control"><span>Speed <output data-value="speed"></output></span><input data-setting="speed" type="range" min="${speedMin}" max="${speedMax}" step="0.05" aria-label="${name} speed"></label><label class="card-control"><span>Intensity <output data-value="intensity"></output></span><input data-setting="intensity" type="range" min="0" max="2" step="0.05" aria-label="${name} intensity"></label><label class="card-color"><span>${state.config?'Frame color':'Color'} <output data-value="color"></output></span><input data-setting="color" type="color" aria-label="${name} color"></label><details class="card-code" open><summary>Code preview <span>HTML + CDN + JS</span></summary><pre><code></code></pre></details><div class="customizer-actions"><button data-copy-custom>Copy my settings ↗</button><button data-reset-custom>Reset</button></div>`;
  const toggle=document.createElement('button');toggle.className='customize-toggle';toggle.textContent='Customize';toggle.setAttribute('aria-label','Customize '+name);toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-controls',panel.id);
+ const settingsArea=document.createElement('div');settingsArea.className='modal-settings';
+ const codeArea=document.createElement('div');codeArea.className='modal-code';
+ for(const child of [...panel.children]){(child.matches('.card-code,.customizer-actions')?codeArea:settingsArea).append(child);}
+ panel.append(settingsArea,codeArea);
  host.append(toggle,panel);
- function setOpen(open){panel.hidden=!open;toggle.setAttribute('aria-expanded',String(open));toggle.textContent=open?'Close customization':'Customize';host.classList.toggle('customizer-open',open);host.closest('.study-sticky')?.classList.toggle('editing',open);window.dispatchEvent(new Event('resize'));}
+ const home=document.createComment('customizer home');panel.before(home);
+ function setOpen(open){if(open)openCustomizer({panel,toggle,home,name,preview});else if(activeCustomizer?.panel===panel)closeCustomizer();}
  toggle.addEventListener('click',()=>setOpen(panel.hidden));
- panel.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();setOpen(false);toggle.focus();}});
-
+ panel.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();setOpen(false);}});
  const controls=Object.fromEntries([...panel.querySelectorAll('[data-setting]')].map(el=>[el.dataset.setting,el]));
  function refresh(){
   const speed=state.config?state.config.speed:state.speed;
@@ -215,6 +219,7 @@ function customizationPanel(host,name,state,{speedMax=3,speedMin=0,readIntensity
   panel.querySelector('[data-value="intensity"]').value=Number(readIntensity()).toFixed(2);
   panel.querySelector('[data-value="color"]').value=controls.color.value.toUpperCase();
   panel.querySelector('code').textContent=code();
+  if(activeCustomizer?.panel===panel)updateModalPreview();
  }
  for(const [key,control] of Object.entries(controls))control.addEventListener('input',()=>{
   if(key==='speed'){if(state.config)state.config.speed=Number(control.value);else state.speed=Number(control.value);}
@@ -222,7 +227,7 @@ function customizationPanel(host,name,state,{speedMax=3,speedMin=0,readIntensity
   if(key==='color'){if(state.config){state.frameColor=control.value;state.frameEnabled=true;}else state.color=control.value;}
   apply();refresh();
  });
- panel.querySelector('[data-copy-custom]').addEventListener('click',()=>copy(code()));
+ panel.querySelector('[data-copy-custom]').addEventListener('click',async event=>{const button=event.currentTarget;const ok=await copy(code());button.textContent=ok?'Copied ✓':'Select code above';setTimeout(()=>button.textContent='Copy my settings ↗',2000);});
  panel.querySelector('[data-reset-custom]').addEventListener('click',()=>{reset();apply();refresh();});refresh();
  return {panel,refresh,toggle};
 }
@@ -237,14 +242,61 @@ function mountImageEditor(host,fx,state,key,name,selector,single=false){
    frame.style.background=state.frameColor;target.style.background=state.frameColor;
   }else if(frame){frame.replaceWith(target);frame=null;target.style.background=originalBackground;}
  };
- const editor=customizationPanel(host,name,state,{readIntensity:()=>state.config.intensity,applyIntensity:n=>state.config.intensity=n,code:()=>imageCode({...state,scroll:single||state.scroll},key,single),apply,reset:()=>{for(const k of Object.keys(state))delete state[k];Object.assign(state,structuredClone(original));}});
- editor.panel.insertAdjacentHTML('afterbegin','<p class="customizer-note">Color changes the frame and visible edge cutouts.</p>');return editor;
+ const editor=customizationPanel(host,name,state,{readIntensity:()=>state.config.intensity,applyIntensity:n=>state.config.intensity=n,code:()=>imageCode({...state,scroll:single||state.scroll},key,single),apply,reset:()=>{for(const k of Object.keys(state))delete state[k];Object.assign(state,structuredClone(original));},preview:()=>{const {frameColor,frameEnabled,...options}=state;return {kind:'image',options,sources:[...target.querySelectorAll('img')].map(img=>({src:img.currentSrc||img.src,alt:img.alt})),frameEnabled,frameColor:frameEnabled?frameColor:'#e9ece2',scrubbable:!!(options.scroll||options.scrollEffect)};}});
+ editor.panel.querySelector('.modal-settings').insertAdjacentHTML('afterbegin','<p class="customizer-note">Color changes the frame and visible edge cutouts.</p>');return editor;
 }
 function mountFollowerEditor(host,preview,state,name){
  const original=structuredClone(state),baseSize=state.size;
  const apply=()=>{preview.setOptions(state);host.querySelector('.follower-swatch').style.background=state.color;if(pageFollower&&selectedFollower===state.style){pageFollower.setOptions(state);$('follower-color').value=state.color;$('follower-size').value=String(state.size);} $('follower-code').textContent=followerCode();};
- const editor=customizationPanel(host,name,state,{speedMin:1,speedMax:30,readIntensity:()=>state.size/baseSize,applyIntensity:n=>state.size=Math.max(12,baseSize*n),code:()=>followerCode(state),apply,reset:()=>Object.assign(state,original)});
- editor.apply=apply;editor.panel.insertAdjacentHTML('afterbegin','<p class="customizer-note">Intensity controls size and spread; speed controls follow response.</p>');return editor;
+ const editor=customizationPanel(host,name,state,{speedMin:1,speedMax:30,readIntensity:()=>state.size/baseSize,applyIntensity:n=>state.size=Math.max(12,baseSize*n),code:()=>followerCode(state),apply,reset:()=>Object.assign(state,original),preview:()=>({kind:'follower',options:{...state},scrubbable:false})});
+ editor.apply=apply;editor.panel.querySelector('.modal-settings').insertAdjacentHTML('afterbegin','<p class="customizer-note">Intensity controls size and spread; speed controls follow response.</p>');return editor;
+}
+
+
+let activeCustomizer=null,customizerDialog=null,modalUI=null,previewReady=false,modalId=0,previousOverflow='';
+function ensureCustomizerDialog(){
+ if(customizerDialog)return;
+ const dialog=document.createElement('dialog');dialog.className='customizer-dialog';dialog.setAttribute('aria-labelledby','customizer-title');dialog.setAttribute('aria-modal','true');
+ dialog.innerHTML=`<header class="customizer-dialog-header"><div><span class="eyebrow">LIVE ANIMATION STUDIO</span><h2 id="customizer-title"></h2></div><button data-close-customizer aria-label="Close customization" autofocus>×</button></header><div class="modal-layout"><section class="modal-preview-pane"><h3>Live preview <span class="live-dot">LIVE</span></h3><iframe title="Live animation preview" class="modal-preview-frame"></iframe><p class="modal-preview-status" role="status">Loading preview…</p><label class="modal-scrub" hidden>Scroll progress <output>50%</output><input type="range" min="0" max="1" step="0.01" value="0.5" aria-label="Preview scroll progress"></label></section><div class="modal-editor-mount"></div></div>`;
+ document.body.append(dialog);customizerDialog=dialog;
+ modalUI={frame:dialog.querySelector('iframe'),mount:dialog.querySelector('.modal-editor-mount'),title:dialog.querySelector('h2'),status:dialog.querySelector('.modal-preview-status'),scrub:dialog.querySelector('.modal-scrub'),progress:dialog.querySelector('.modal-scrub input'),output:dialog.querySelector('.modal-scrub output')};
+ dialog.querySelector('[data-close-customizer]').addEventListener('click',closeCustomizer);
+ dialog.addEventListener('cancel',event=>{event.preventDefault();closeCustomizer();});
+ dialog.addEventListener('click',event=>{const r=dialog.getBoundingClientRect();if(event.target===dialog&&(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom))closeCustomizer();});
+ modalUI.progress.addEventListener('input',()=>{modalUI.output.value=Math.round(Number(modalUI.progress.value)*100)+'%';updateModalPreview();});
+ window.addEventListener('message',event=>{
+  if(event.origin!==location.origin||event.source!==modalUI.frame.contentWindow)return;
+  if(event.data?.type==='okuma-preview-ready'){previewReady=true;updateModalPreview();}
+  if(event.data?.type==='okuma-preview-close'&&activeCustomizer&&event.data.id===activeCustomizer.id){closeCustomizer();return;}
+  if(!activeCustomizer||event.data?.id!==activeCustomizer.id||event.data?.revision!==activeCustomizer.revision)return;
+  if(event.data.type==='okuma-preview-rendered'){dialog.dataset.previewState='ready';modalUI.status.textContent=event.data.kind==='follower'?'Move your mouse inside the preview.':'Hover and click the image to try the effect.';}
+  if(event.data.type==='okuma-preview-error'){dialog.dataset.previewState='error';modalUI.status.textContent='Preview unavailable. Check WebGL and image access.';}
+  if(event.data.type==='okuma-preview-close')closeCustomizer();
+ });
+ modalUI.frame.src='preview.html?v=popup-1';
+}
+function openCustomizer(context){
+ if(activeCustomizer)closeCustomizer();
+ ensureCustomizerDialog();activeCustomizer={...context,id:++modalId,revision:0};
+ previousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
+ modalUI.title.textContent=context.name;modalUI.progress.value='0.5';modalUI.output.value='50%';modalUI.status.textContent='Loading preview…';customizerDialog.dataset.previewState='loading';
+ context.panel.hidden=false;context.toggle.setAttribute('aria-expanded','true');modalUI.mount.append(context.panel);context.panel.querySelector('.card-code').open=true;
+ if(pageFollower)pageFollower.setEnabled(false);
+ customizerDialog.showModal();updateModalPreview();
+}
+function updateModalPreview(){
+ if(!activeCustomizer||!modalUI)return;
+ const payload=activeCustomizer.preview();modalUI.scrub.hidden=!payload.scrubbable;
+ if(!previewReady)return;
+ activeCustomizer.revision++;customizerDialog.dataset.previewState='loading';
+ modalUI.frame.contentWindow.postMessage({type:'okuma-preview-update',id:activeCustomizer.id,revision:activeCustomizer.revision,payload:{...payload,progress:Number(modalUI.progress.value)}},location.origin);
+}
+function closeCustomizer(){
+ const current=activeCustomizer;if(!current)return;activeCustomizer=null;
+ modalUI.frame.contentWindow.postMessage({type:'okuma-preview-stop'},location.origin);
+ current.panel.hidden=true;current.home.after(current.panel);current.toggle.setAttribute('aria-expanded','false');
+ if(customizerDialog.open)customizerDialog.close();document.body.style.overflow=previousOverflow;
+ if(pageFollower)pageFollower.setEnabled(true);current.toggle.focus({preventScroll:true});
 }
 initCategories();syncCategoryFromHash(false);
 if(window.FlowFX){initFollowers();init();}else failed(new Error('Build the library first with npm run build.'));
