@@ -19,13 +19,14 @@ const initial={intensity:.85,speed:.9,frequency:5,zoom:.5,chromatic:.7,damping:7
 const base={...initial};
 function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),3000);}
 function settings(){const config={...base};for(const key of ['intensity','speed','frequency','chromatic'])config[key]=Number($(key).value);config.zoom=$('zoom').checked?(base.zoom||.5):0;return {...mainDesign,style:Number($('effect').value),gooey:$('gooey').checked,hoverEdge:$('hover-edge').value,config};}
-function imageCode(options,key='gallery',single=false){
+function imageCode(options,key='gallery',single=false,customSources=null){
  const className='okuma-'+key;
  const {frameColor='#e9ece2',frameEnabled=false,...effectOptions}=options;
  const frameStart=frameEnabled?`<div style="background:${frameColor};padding:6px;border-radius:6px;width:min(100%,800px);${options.scroll?'margin:70vh auto;':''}">\n`:'';
  const frameEnd=frameEnabled?'\n</div>':'';
- const sources=(single?['dunes']:['dunes','violet','tide']).map((name,i)=>`  <img src="${EXAMPLE_ASSETS+name}.svg" alt="${name} landscape"\n       style="${i?'display:none':'display:block;width:100%;height:100%;object-fit:cover'}">`).join('\n');
- return `<!-- Include the CDN script once per page. Replace image URLs with yours. -->\n<script src="${CDN_URL}"><\/script>\n\n${frameStart}<div class="${className}" tabindex="0"\n     aria-label="Interactive image gallery"\n     style="width:${frameEnabled?'100%':'min(100%,800px)'};height:480px;${options.scroll&&!frameEnabled?'margin:70vh auto;':''}">\n${sources}\n</div>${frameEnd}\n\n<script>\n(() => {\n  const fx = FlowFX.imageEffect(".${className}", ${JSON.stringify(effectOptions,null,2).replace(/\n/g,'\n  ')});\n  fx.ready.catch(console.error);\n  // Call fx.destroy() when removing this gallery.\n})();\n<\/script>`;
+ const escapeAttribute=value=>String(value).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
+ const sources=(customSources??(single?['dunes']:['dunes','violet','tide']).map(name=>({src:EXAMPLE_ASSETS+name+'.svg',alt:name+' landscape'}))).map((image,i)=>`  <img src="${escapeAttribute(image.src)}" alt="${escapeAttribute(image.alt)}"\n       style="${i?'display:none':'display:block;width:100%;height:100%;object-fit:cover'}">`).join('\n');
+ return `<!-- Include the CDN script once per page. Replace image URLs with yours.${customSources?' Copy your uploaded files into the assets/ folder beside this HTML. Local preview images are not hosted.':''} -->\n<script src="${CDN_URL}"><\/script>\n\n${frameStart}<div class="${className}" tabindex="0"\n     aria-label="Interactive image gallery"\n     style="width:${frameEnabled?'100%':'min(100%,800px)'};height:480px;${options.scroll&&!frameEnabled?'margin:70vh auto;':''}">\n${sources}\n</div>${frameEnd}\n\n<script>\n(() => {\n  const fx = FlowFX.imageEffect(".${className}", ${JSON.stringify(effectOptions,null,2).replace(/\n/g,'\n  ')});\n  fx.ready.catch(console.error);\n  // Call fx.destroy() when removing this gallery.\n})();\n<\/script>`;
 }
 function localCode(){return imageCode(settings(),'playground');}
 function sync(){const options=settings();main?.setOptions(options);$('effect-title').textContent=effects[options.style-1][0];$('style-number').textContent=String(options.style).padStart(2,'0');for(const key of ['intensity','speed','frequency','chromatic'])$(key+'-value').value=Number($(key).value).toFixed(2);$('install-code').textContent=localCode();$('design-summary').textContent=`HOVER / ${mainDesign.hoverMotion.toUpperCase()} · CLICK / ${mainDesign.transition.toUpperCase()}`;}
@@ -234,6 +235,7 @@ function customizationPanel(host,name,state,{speedMax=3,speedMin=0,readIntensity
 function mountImageEditor(host,fx,state,key,name,selector,single=false){
  state.config={speed:1,intensity:.8,...state.config};state.frameColor='#e9ece2';state.frameEnabled=false;
  const original=structuredClone(state),target=document.querySelector(selector),originalBackground=target.style.background;
+ let uploadedImages=null,uploadRevision=0;
  let frame;
  const apply=()=>{
   fx.setOptions({config:state.config});
@@ -242,8 +244,27 @@ function mountImageEditor(host,fx,state,key,name,selector,single=false){
    frame.style.background=state.frameColor;target.style.background=state.frameColor;
   }else if(frame){frame.replaceWith(target);frame=null;target.style.background=originalBackground;}
  };
- const editor=customizationPanel(host,name,state,{readIntensity:()=>state.config.intensity,applyIntensity:n=>state.config.intensity=n,code:()=>imageCode({...state,scroll:single||state.scroll},key,single),apply,reset:()=>{for(const k of Object.keys(state))delete state[k];Object.assign(state,structuredClone(original));},preview:()=>{const {frameColor,frameEnabled,...options}=state;return {kind:'image',options,sources:[...target.querySelectorAll('img')].map(img=>({src:img.currentSrc||img.src,alt:img.alt})),frameEnabled,frameColor:frameEnabled?frameColor:'#e9ece2',scrubbable:!!(options.scroll||options.scrollEffect)};}});
- editor.panel.querySelector('.modal-settings').insertAdjacentHTML('afterbegin','<p class="customizer-note">Color changes the frame and visible edge cutouts.</p>');return editor;
+ const editor=customizationPanel(host,name,state,{readIntensity:()=>state.config.intensity,applyIntensity:n=>state.config.intensity=n,code:()=>imageCode({...state,scroll:single||state.scroll},key,single,uploadedImages?.map(image=>({src:image.path,alt:image.alt}))),apply,reset:()=>{for(const k of Object.keys(state))delete state[k];Object.assign(state,structuredClone(original));},preview:()=>{const {frameColor,frameEnabled,...options}=state;return {kind:'image',options,sources:uploadedImages??[...target.querySelectorAll('img')].map(img=>({src:img.currentSrc||img.src,alt:img.alt})),frameEnabled,frameColor:frameEnabled?frameColor:'#e9ece2',scrubbable:!!(options.scroll||options.scrollEffect)};}});
+ editor.panel.querySelector('.modal-settings').insertAdjacentHTML('afterbegin',`<div class="image-upload"><label>Try your images<input type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/avif" multiple aria-label="Upload images for ${name}"></label><p class="customizer-note">Choose up to 8 JPG, PNG, WebP, GIF or AVIF images (10 MB each). Images stay in your browser. Use several images for click transitions.</p><p class="upload-status" role="status">Using demo images.</p><button type="button" data-restore-images hidden>Restore demo images</button></div><p class="customizer-note">Color changes the frame and visible edge cutouts.</p>`);
+ const input=editor.panel.querySelector('input[type=file]'),status=editor.panel.querySelector('.upload-status'),restore=editor.panel.querySelector('[data-restore-images]');
+ input.addEventListener('change',async()=>{
+  const files=[...input.files];if(!files.length)return;const revision=++uploadRevision;
+  if(files.length>8||files.some(file=>!/^image\/(png|jpeg|webp|gif|avif)$/.test(file.type)||file.size>10*1024*1024)){status.textContent='Choose up to 8 supported images, each 10 MB or smaller.';input.value='';return;}
+  status.textContent='Loading your images…';
+  try{
+   const images=await Promise.all(files.map(async(file,index)=>{
+    const src=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file);});
+    const image=new Image();image.src=src;await image.decode();
+    const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,'_')||'image';
+    return {src,alt:file.name,path:'assets/'+String(index+1).padStart(2,'0')+'-'+safeName};
+   }));
+   if(revision!==uploadRevision)return;uploadedImages=images;restore.hidden=false;
+   status.textContent=images.length+' image'+(images.length===1?'':'s')+' loaded. Copy these files to the assets/ paths shown in the code.';editor.refresh();
+  }catch(error){if(revision===uploadRevision)status.textContent='Could not read an image. Try another file; your previous preview is kept.';}
+  finally{if(revision===uploadRevision)input.value='';}
+ });
+ restore.addEventListener('click',()=>{uploadRevision++;uploadedImages=null;input.value='';restore.hidden=true;status.textContent='Using demo images.';editor.refresh();});
+ return editor;
 }
 function mountFollowerEditor(host,preview,state,name){
  const original=structuredClone(state),baseSize=state.size;
@@ -273,7 +294,7 @@ function ensureCustomizerDialog(){
   if(event.data.type==='okuma-preview-error'){dialog.dataset.previewState='error';modalUI.status.textContent='Preview unavailable. Check WebGL and image access.';}
   if(event.data.type==='okuma-preview-close')closeCustomizer();
  });
- modalUI.frame.src='preview.html?v=popup-1';
+ modalUI.frame.src='preview.html?v=upload-1';
 }
 function openCustomizer(context){
  if(activeCustomizer)closeCustomizer();

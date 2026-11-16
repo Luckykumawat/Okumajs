@@ -32,6 +32,19 @@
    const other=panels[(i+1)%panels.length];check('card '+(i+1)+' settings stay isolated',other.querySelector('code').textContent===initial[(i+1)%panels.length]);
    copied='';panel.querySelector('[data-copy-custom]').click();await Promise.resolve();check('card '+(i+1)+' copies current preview exactly',copied===code);
    panel.querySelector('[data-reset-custom]').click();check('card '+(i+1)+' reset restores original snippet',panel.querySelector('code').textContent===initial[i]);
+   if(image){
+    const input=panel.querySelector('input[type=file]'),transfer=new w.DataTransfer();
+    const canvas=d.createElement('canvas');canvas.width=32;canvas.height=32;canvas.getContext('2d').fillRect(0,0,32,32);
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));
+    transfer.items.add(new w.File([blob],'my image.png',{type:'image/png'}));transfer.items.add(new w.File([blob],'second.png',{type:'image/png'}));
+    input.files=transfer.files;input.dispatchEvent(new w.Event('change',{bubbles:true}));
+    const started=performance.now();while(!panel.querySelector('.upload-status').textContent.startsWith('2 images loaded')){if(performance.now()-started>10000)throw Error('Upload timeout');await new Promise(requestAnimationFrame);}await ready();
+    const uploaded=panel.querySelector('code').textContent;
+    check('card '+(i+1)+' uploads two local images into live preview',preview.querySelectorAll('#preview-stage img').length===2&&preview.querySelector('#preview-stage img').src.startsWith('data:image/png'));
+    check('card '+(i+1)+' exports portable image paths without local data',uploaded.includes('assets/01-my_image.png')&&uploaded.includes('assets/02-second.png')&&!uploaded.includes('data:image')&&!uploaded.includes('blob:'));
+    panel.querySelector('[data-copy-custom]').click();await Promise.resolve();check('card '+(i+1)+' copies uploaded image settings',copied===uploaded);
+    panel.querySelector('[data-restore-images]').click();await ready();check('card '+(i+1)+' restores demo images and code',panel.querySelector('code').textContent===initial[i]);
+   }else check('card '+(i+1)+' follower has no image upload',!panel.querySelector('input[type=file]'));
    d.querySelector('[data-close-customizer]').click();check('card '+(i+1)+' closes controls',panel.hidden&&toggle.getAttribute('aria-expanded')==='false');
   }
   clipboard.writeText=originalWrite;

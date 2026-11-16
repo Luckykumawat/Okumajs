@@ -70,3 +70,8 @@ On 14 November 2026, okumajs@0.3.0 was published and became available in the npm
 - Browser QA: all 252 popup checks passed, including preview rendering, settings isolation, current-code copy, reset, and close.
 - Desktop three-column layout and 390×844 mobile layout visually checked; mobile dialog has no horizontal overflow. Scroll preview scrubber checked at 100%.
 - Original cream/green theme retained.
+
+## Local image upload
+- 322 browser popup checks passed across 25 cards. All 15 image/scroll editors decoded two local PNG files, rendered them in the preview, exported portable numbered assets paths, copied the current code, and restored the demo.
+- Ten follower editors retain their existing UI without image controls. No local data URLs or blob URLs are exported in copied code.
+- PNG/JPG/WebP/GIF/AVIF only; maximum 8 files and 10 MB per file; decode failures retain prior images.

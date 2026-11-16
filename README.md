@@ -375,3 +375,8 @@ MIT license. See `THIRD_PARTY_NOTICES.md` for bundled Three.js attribution.
 ## GitHub Pages deployment
 
 The `Deploy Okumajs demo and documentation` workflow publishes only `demo/` to GitHub Pages after demo, README, documentation generator or workflow changes are pushed to main. It regenerates documentation from README, checks browser script syntax, and deploys the static artifact. No npm token is required. Demo Copy buttons include the pinned public npm CDN and complete example markup. The library itself remains version 0.3.0; documentation/site updates do not republish npm.
+
+### Preview your own images
+Open Customize on any image or scroll animation and choose **Try your images**. Upload up to 8 PNG, JPG, WebP, GIF or AVIF images, at most 10 MB each. Files are decoded locally and are never uploaded to a server. Use multiple images for click transitions. Settings reset keeps your chosen images; **Restore demo images** clears them. Selections persist per card until the page reloads.
+
+The copied code uses numbered paths such as `assets/01-my_image.png`. Copy and rename your original files to match those paths beside your HTML, or replace the paths with your hosted image URLs. Temporary local preview data is never included in the snippet.
